@@ -6,6 +6,9 @@ This project is development in colaboration with CICATA Legaria, CITNOVA and Con
 the Copyright is by:
 PhD. Eduardo Vargas Bernardino
 
-This software allow to user get Digital image lock-in-Amplifier from Thermal Images, using a cheap IR-Camera.
+This software allow to user get Digital image lock-in-Amplifier (LIA) from Thermal Images, using a cheap IR-Camera.
 the software is composed by next Clases in python language.
-base:
+
+Methods to get the LIA:
+	Fourier:
+	
