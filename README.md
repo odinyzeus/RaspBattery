@@ -14,3 +14,5 @@ Methods to get the LIA:
 Fourier:
 
 Geometrical:
+
+Four Points:
