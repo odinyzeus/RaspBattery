@@ -10,5 +10,7 @@ This software allow to user get Digital image lock-in-Amplifier (LIA) from Therm
 the software is composed by next Clases in python language.
 
 Methods to get the LIA:
-	Fourier:
-	
+
+Fourier:
+
+Geometrical:
