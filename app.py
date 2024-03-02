@@ -1,4 +1,5 @@
 import tkinter as tk
+import Thermography as tg
 
 # Función que se ejecutará al hacer clic en el botón
 def on_button_click():
@@ -6,7 +7,7 @@ def on_button_click():
 
 # Crear la ventana
 root = tk.Tk()
-root.title("Ventana Tkinter")
+root.title(tg.Video_Device)
 
 # Crear un widget de etiqueta (label) y colocarlo en la ventana
 label = tk.Label(root, text="¡Hola!")
