@@ -2,6 +2,8 @@
 import cv2
 import os
 
+
+
 _max_devices    = 10            # Maximum devices to scan by the app
 Video_Device:any
 Video:str
