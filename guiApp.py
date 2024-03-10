@@ -101,35 +101,7 @@ class Application(ttk.Frame):
         self._body_frame.grid(row=1, column=0, sticky=NSEW)
         # Creates the ribbon left section.
         
-        self._body_left_frame = ttk.Frame(
-            self._body_frame, 
-            padding=self.Frame_Padding, 
-            bootstyle = SECONDARY,
-            borderwidth=1,
-            relief=SOLID,
-            width=250
-            )
-        self._body_left_frame.pack(fill=BOTH,side=LEFT,padx=5)
-        
-        self._body_right_frame = ttk.Frame(
-            self._body_frame, 
-            padding=self.Frame_Padding, 
-            bootstyle = SECONDARY,
-            borderwidth=1,
-            relief=SOLID,
-            width=250
-            )
-        self._body_right_frame.pack(fill=BOTH,side=RIGHT, padx=5)
-        
-        self._body_center_frame = ttk.Frame(
-            self._body_frame,
-            padding=self.Frame_Padding,
-            bootstyle = SECONDARY,
-            borderwidth=1,
-            relief=SOLID
-            )
-        self._body_center_frame.pack(fill=BOTH,side=LEFT,padx=5,expand=TRUE)
-        self._create_ribbon_left()  
+    
 
     
     # Constructor 
