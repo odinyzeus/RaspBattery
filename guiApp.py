@@ -1,79 +1,85 @@
 import tkinter as tk
 import ttkbootstrap as ttk
-from ttkbootstrap.constants import *
+import Header as Hdr
+import Footer as Ftr
+import Body as Bdy 
 from pathlib import Path
+from Constants import *
+
+PATH = Path(__file__).parent / 'assets'
+
+def dummy(self):
+        pass
+    
+def set_win2center(self:ttk.Frame):
+    # Configurar ventana en el centro de la pantalla
+    screen_width = self.winfo_screenwidth()     # gets the screen's width
+    screen_height = self.winfo_screenheight()   # gets the screen's height
+    window_width = self.winfo_width()           # gets the window's width
+    window_height = self.winfo_height()         # gets the window's height
+    x = (screen_width - window_width) // 2
+    y = (screen_height - window_height) // 2
+    self.geometry(f'{window_width}x{window_height}+{x}+{y}')
+
+def get_contained_frames(master_frame):
+    contained_frames = []
+    for widget in master_frame.pack_slaves():
+        if isinstance(widget, ttk.Frame):
+            contained_frames.append(widget)
+    return contained_frames
+    
+def set_menu(self:ttk.Frame):
+    """
+    Creates the principal menu of the application
+    """
+    _mnu = ttk.Menu(self)
+    _mnu.add_command(label="Archivo", command=dummy(self))
+    _mnu.add_command(label="Editar", command=dummy(self))
+    _mnu.add_command(label="Ayuda", command=dummy(self))
+    self.config(menu=_mnu)
+
+def set_gui(self:ttk.Frame):
+    # application images
+    self.images = [
+    ttk.PhotoImage(
+        name='logo',
+        file=PATH / 'icons8_broom_64px_1.png'),
+    ttk.PhotoImage(
+        name='cleaner',
+        file=PATH  / 'icons8_broom_64px.png'),
+    ttk.PhotoImage(
+        name='registry',
+        file=PATH  / 'icons8_registry_editor_64px.png'),
+    ttk.PhotoImage(
+        name='tools',
+        file=PATH  / 'icons8_wrench_64px.png'),
+    ttk.PhotoImage(
+        name='options',
+        file=PATH  / 'icons8_settings_64px.png'),
+    ttk.PhotoImage(
+        name='privacy',
+        file=PATH  / 'icons8_spy_80px.png'),
+    ttk.PhotoImage(
+        name='junk',
+        file=PATH  / 'icons8_trash_can_80px.png'),
+    ttk.PhotoImage(
+        name='protect',
+        file=PATH  / 'icons8_protect_40px.png')
+    ]
+
+    Hdr.header_create(self)
+    Bdy.body_create(self)
+    Ftr.footer_create(self)
+
+
+
+
+
+
+
+
 
 class Application(ttk.Frame):
-    _images = []
-    
-    _hdr_frame      : ttk.Frame
-    _frame_padding  = 5                     # Creates the Frame Padding into guiApp
-    _path           = Path(__file__).parent
-    _path_asset     = _path / 'assets'     
-    
-    def adjust_content(self, event):
-    # Adjust the size of application in real time
-        _size = self.grid_size()
-        
-        self.grid_rowconfigure(0,weight=0)
-        self.grid_rowconfigure(1,weight=1)
-        self.grid_rowconfigure(2,weight=0)
-        
-        self.grid_columnconfigure(0,weight=1)
-            
-        # configure the frame header columns auto adjust
-        self._hdr_frame.grid_columnconfigure(0, weight=0)
-        self._hdr_frame.grid_columnconfigure(1, weight=0)
-        self._hdr_frame.grid_columnconfigure(2, weight=1)  
-        self._hdr_frame.grid_columnconfigure(3, weight=0)
-        self._hdr_frame.grid_columnconfigure(4, weight=0)
-             
-        # Configure the footer header columns auto adjust
-        self._footer_frame.grid_columnconfigure(0, weight=1)  # Fila de la barra de estado
-
-    # Header Section Configure
-    def _init_hdr(self):
-        # header initializer
-        self._hdr_frame = ttk.Frame(self, padding=self.Frame_Padding, bootstyle=DEFAULT_THEME,borderwidth=1, relief=SOLID, height=50)
-        self._hdr_frame.grid(row=0, column=0, sticky=EW)
-        
-        hdr_logo_left = ttk.Label(
-            master=self._hdr_frame,
-            image='logo',
-            bootstyle=(LIGHT)
-        )
-        hdr_logo_left.grid(row=0, column=0)
-        
-        hdr_separator_one = ttk.Separator(
-            self._hdr_frame,
-            bootstyle = DEFAULT_THEME,
-            orient= VERTICAL
-        )
-        hdr_separator_one.grid(row=0,column=1,sticky=NS)
-        
-        hdr_text = ttk.Label(
-            master=self._hdr_frame,
-            text='Digital Lock-In Amplifier for Thermography Analisis',
-            font= (DEFAULT_THEME, 15),
-            bootstyle=(LIGHT),
-            justify=CENTER
-        )
-        hdr_text.grid(row=0, column=2, sticky="ew")
-        
-        hdr_separator_two = ttk.Separator(
-            self._hdr_frame,
-            bootstyle = DEFAULT_THEME,
-            orient= VERTICAL
-        )
-        hdr_separator_two.grid(row=0,column=3,sticky=NS)
-        
-        hdr_logo_right = ttk.Label(
-            master=self._hdr_frame,
-            image='logo',
-            bootstyle=(SECONDARY)
-        )
-        hdr_logo_right.grid(row=0, column=4)
-        
     # Body Section Configure
     # creates the ribbon section 
     def _create_ribbon_left(self):
@@ -110,27 +116,20 @@ class Application(ttk.Frame):
             padding=self.Frame_Padding, 
             bootstyle = SECONDARY,
             borderwidth=1,
+            relief=SOLID,
+            width=250
+            )
+        self._body_right_frame.pack(fill=BOTH,side=RIGHT, padx=5)
+        
+        self._body_center_frame = ttk.Frame(
+            self._body_frame,
+            padding=self.Frame_Padding,
+            bootstyle = SECONDARY,
+            borderwidth=1,
             relief=SOLID
             )
-        self._body_right_frame.pack(fill=BOTH,side=RIGHT, padx=5, expand=TRUE)
-        
-        self._create_ribbon_left()
-        
-        
-    # Footer Section Configure
-    def _init_footer(self):
-        # Creates a status bar on footer section 
-        self._footer_frame = ttk.Frame(self, padding=self.Frame_Padding, bootstyle=DEFAULT_THEME,borderwidth=1, relief=SOLID, height=25)
-        self._footer_frame.grid(row=2, column=0, sticky=EW)
-        
-        # Create a status bar
-        self._status_bar = ttk.Label(
-            master=self._footer_frame,
-            text="Listo",
-            font=(DEFAULT_THEME,10),
-            bootstyle=INFO,
-        )
-        self._status_bar.grid(row=0, column=0, sticky="ew")  
+        self._body_center_frame.pack(fill=BOTH,side=LEFT,padx=5,expand=TRUE)
+        self._create_ribbon_left()  
 
     
     # Constructor 
@@ -138,40 +137,13 @@ class Application(ttk.Frame):
         super().__init__(master, **kwargs)
         self.pack(fill=BOTH, expand=YES)
         
-        # Program's Configuration Section 
-        master.resizable(True,True)                         
-        # master.minsize(width=800, height=600)       # Sets the minimum size of GUI
-        # master.maxsize(width=1200, height=600)       # Sets the maximum size of main window
+                                
+        
         master.bind("<Configure>", self.adjust_content)     # bind "configure" event to adjust's method
 
-        # application images
-        self._images = [
-            ttk.PhotoImage(
-                name='logo',
-                file=self._path_asset / 'icons8_broom_64px_1.png'),
-            ttk.PhotoImage(
-                name='cleaner',
-                file=self._path_asset  / 'icons8_broom_64px.png'),
-            ttk.PhotoImage(
-                name='registry',
-                file=self._path_asset  / 'icons8_registry_editor_64px.png'),
-            ttk.PhotoImage(
-                name='tools',
-                file=self._path_asset  / 'icons8_wrench_64px.png'),
-            ttk.PhotoImage(
-                name='options',
-                file=self._path_asset  / 'icons8_settings_64px.png'),
-            ttk.PhotoImage(
-                name='privacy',
-                file=self._path_asset  / 'icons8_spy_80px.png'),
-            ttk.PhotoImage(
-                name='junk',
-                file=self._path_asset  / 'icons8_trash_can_80px.png'),
-            ttk.PhotoImage(
-                name='protect',
-                file=self._path_asset  / 'icons8_protect_40px.png')
-        ]
-
+        
+        # Creates the menu
+        self._init_menu()
         # Header section of application
         self._init_hdr()
         
@@ -183,9 +155,8 @@ class Application(ttk.Frame):
     
     def _show_methods_tab(self):
         self._status_bar.config(text=f'Presionaste el boton de configurar')
-        
-    
-    
+            
+
     
     # Properties section   
     @property
@@ -199,11 +170,7 @@ class Application(ttk.Frame):
     
         """_summary_
         
-        # action buttons
-        # the actions buttons are located in left side of screen
-        action_frame = ttk.Frame(self)
-        action_frame.grid(row=1, column=0, sticky=NSEW)
-        
+              
         # option notebook
         self.notebook = ttk.Notebook(self)
         self.notebook.grid(row=1, column=1, sticky=NSEW, pady=(5, 0))
@@ -280,12 +247,7 @@ class ApplicationTkinter:
     def __init__(self, theme:str = "superhero") -> None:    
         #self.Win.iconbitmap()
         
-        # Makes the application menu
-        self.menu_principal = ttk.Menu(self.Win)
-        self.menu_principal.add_command(label="Archivo", command=self.dummy)
-        self.menu_principal.add_command(label="Editar", command=self.dummy)
-        self.menu_principal.add_command(label="Ayuda", command=self.dummy)
-        self.Win.config(menu=self.menu_principal)
+       
         
         # Creates principal frame 
         self.main_frame = ttk.Frame(self.Win)
@@ -319,8 +281,7 @@ class ApplicationTkinter:
         # Crear el frame para el header
         pass
 
-    def dummy(self):
-        pass
+
 
 """
 class AplicacionTkinter:
