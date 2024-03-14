@@ -50,29 +50,39 @@ class main_header(ttk.Frame):
     
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
+
+        imgLogo = ttk.PhotoImage(name='logo', file=PATH / 'icons8_broom_64px_1.png')
         
-        imgLogo = ttk.PhotoImage(name='logo',
-                                file=PATH / 'icons8_broom_64px_1.png')
-        
-        """frmLogo = ttk.Frame(master=self,
-                            padding=kwargs['padding'],
-                            bootstyle=DEFAULT_THEME,
-                            relief=SOLID,
-                            height=kwargs['height'],
-                            width=120
-                            )"""
+        self.columnconfigure(1, weight=1)
         self.pack(fill=BOTH,
                   side=TOP,
                   padx=PADX,
                   pady=PADY
                 )
+            
+        frmLogo = ttk.Frame(master=self,
+                            padding=kwargs['padding'],
+                            bootstyle=DEFAULT_THEME,
+                            relief=SOLID,
+                            height=kwargs['height'],
+                            width=120
+                            )
         
-        txtLogo=ttk.Label(master=self,
-                          image=imgLogo,
-                          bootstyle=(INVERSE, SECONDARY)
-                        )
+        frmLogo.grid(row=0,column=0,ipadx=PADX,ipady=PADY,sticky=NSEW)
         
-        txtHeader=ttk.Label(master=self,
+        txtLogo=ttk.Label(master=frmLogo,image=imgLogo, bootstyle=(INVERSE, SECONDARY))
+        txtLogo.image = imgLogo
+        txtLogo.pack(fill=BOTH,expand=YES)                         
+        
+        frmCenter = ttk.Frame(master=self,
+                            padding=kwargs['padding'],
+                            bootstyle=DEFAULT_THEME,
+                            relief=SOLID,
+                            height=kwargs['height'],
+                            )
+        frmCenter.grid(row=0,column=1,ipadx=PADX,ipady=PADY,sticky=NSEW)
+        
+        txtHeader=ttk.Label(master=frmCenter,
                             text='Developed by PhD. Eduardo Vargas Bernardino.....\nsistema de prueba...............\n es una prueba',
                             font=('TkDefaultFixed', 12),
                             padding=kwargs['padding'],
@@ -80,8 +90,7 @@ class main_header(ttk.Frame):
                             justify=CENTER,
                             anchor=CENTER
                             )
-        txtLogo.grid(row=0,column=0,ipadx=PADX,ipady=PADY,sticky=NSEW)
-        txtHeader.grid(row=0,column=1,ipadx=PADX,ipady=PADY,sticky=NSEW)
+        txtHeader.pack(fill=BOTH,expand=YES)
         
         
 class main_body(ttk.Frame):

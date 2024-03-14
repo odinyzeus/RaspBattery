@@ -10,8 +10,6 @@ frmPrincipal = Basics.main_frame(                           # Creates the main f
     bootstyle = ttk.DEFAULT_THEME
     )
 
-#Basics.create_header(Basics.header)
-
 if __name__ == "__main__":     
                                         
     __app.config(menu=mnu)                                  # Defines that principal menu in principal application
