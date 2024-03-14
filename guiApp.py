@@ -1,25 +1,15 @@
 import tkinter as tk
-import ttkbootstrap as ttk
+
 import Header as Hdr
 import Footer as Ftr
 import Body as Bdy 
-from pathlib import Path
+
 from Constants import *
 
-PATH = Path(__file__).parent / 'assets'
 
-def dummy(self):
-        pass
+
+get_progress = lambda value: round((value/300)*100) 
     
-def set_win2center(self:ttk.Frame):
-    # Configurar ventana en el centro de la pantalla
-    screen_width = self.winfo_screenwidth()     # gets the screen's width
-    screen_height = self.winfo_screenheight()   # gets the screen's height
-    window_width = self.winfo_width()           # gets the window's width
-    window_height = self.winfo_height()         # gets the window's height
-    x = (screen_width - window_width) // 2
-    y = (screen_height - window_height) // 2
-    self.geometry(f'{window_width}x{window_height}+{x}+{y}')
 
 def get_contained_frames(master_frame):
     contained_frames = []
@@ -27,46 +17,9 @@ def get_contained_frames(master_frame):
         if isinstance(widget, ttk.Frame):
             contained_frames.append(widget)
     return contained_frames
-    
-def set_menu(self:ttk.Frame):
-    """
-    Creates the principal menu of the application
-    """
-    _mnu = ttk.Menu(self)
-    _mnu.add_command(label="Archivo", command=dummy(self))
-    _mnu.add_command(label="Editar", command=dummy(self))
-    _mnu.add_command(label="Ayuda", command=dummy(self))
-    self.config(menu=_mnu)
+
 
 def set_gui(self:ttk.Frame):
-    # application images
-    self.images = [
-    ttk.PhotoImage(
-        name='logo',
-        file=PATH / 'icons8_broom_64px_1.png'),
-    ttk.PhotoImage(
-        name='cleaner',
-        file=PATH  / 'icons8_broom_64px.png'),
-    ttk.PhotoImage(
-        name='registry',
-        file=PATH  / 'icons8_registry_editor_64px.png'),
-    ttk.PhotoImage(
-        name='tools',
-        file=PATH  / 'icons8_wrench_64px.png'),
-    ttk.PhotoImage(
-        name='options',
-        file=PATH  / 'icons8_settings_64px.png'),
-    ttk.PhotoImage(
-        name='privacy',
-        file=PATH  / 'icons8_spy_80px.png'),
-    ttk.PhotoImage(
-        name='junk',
-        file=PATH  / 'icons8_trash_can_80px.png'),
-    ttk.PhotoImage(
-        name='protect',
-        file=PATH  / 'icons8_protect_40px.png')
-    ]
-
     Hdr.header_create(self)
     Bdy.body_create(self)
     Ftr.footer_create(self)

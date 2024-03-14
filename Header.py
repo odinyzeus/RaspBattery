@@ -2,7 +2,7 @@ import ttkbootstrap as ttk
 from Constants import *
 
 # header
-def header_create(self:ttk.Frame):
+def init_header(self:ttk.Frame):
     hdr_frame = ttk.Frame(self, height=150, border=FRAME_BORDER_WIDTH,relief='raised',padding=PADDING, bootstyle=DEFAULT_THEME)
     hdr_frame.pack(fill=BOTH)
 
