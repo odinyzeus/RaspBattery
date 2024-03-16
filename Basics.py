@@ -212,29 +212,4 @@ class main_frame(ttk.Frame):
                             padding= kwargs['padding']
                             )
         
-        self.pack(fill=BOTH,expand=YES)
-  
-class Application(ttk.Window):
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)                   
-        
-        # application images
-        self.window.images = [
-
-            ttk.PhotoImage(
-            name='registry',
-            file=PATH  / 'icons8_registry_editor_64px.png'),
-            ttk.PhotoImage(
-            name='tools',
-            file=PATH  / 'icons8_wrench_64px.png'),
-            ttk.PhotoImage(
-            name='privacy',
-            file=PATH  / 'icons8_spy_80px.png'),
-            ttk.PhotoImage(
-            name='junk',
-            file=PATH  / 'icons8_trash_can_80px.png'),
-            ttk.PhotoImage(
-            name='protect',
-            file=PATH  / 'icons8_protect_40px.png')
-        ]
-       
+        self.pack(fill=BOTH,expand=YES)      
