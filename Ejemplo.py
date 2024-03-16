@@ -237,7 +237,7 @@ class Cleaner(ttk.Frame):
 
         ttk.Label(
             master=junk_container, 
-            textvariable='junk_lbl',
+            textvariable='junk_l{bl',
             bootstyle=PRIMARY, 
             justify=CENTER
         ).pack(pady=(0, 20))

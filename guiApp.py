@@ -34,19 +34,8 @@ def set_gui(self:ttk.Frame):
 
 class Application(ttk.Frame):
     # Body Section Configure
-    # creates the ribbon section 
-    def _create_ribbon_left(self):
-        # acción para el botón "Options"
-        _options_btn = ttk.Button(
-            master=self._body_left_frame,
-            image='options',
-            text='options',
-            compound=TOP,
-            bootstyle=INFO,
-            command=self._show_methods_tab  # Llamará a la función cuando se presione el botón
-        )
-        _options_btn.pack(side=TOP, fill=BOTH)
-
+    
+   
     # Constructor 
     def __init__(self, master, **kwargs):
         super().__init__(master, **kwargs)
