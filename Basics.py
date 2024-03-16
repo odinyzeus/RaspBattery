@@ -1,9 +1,120 @@
-from tkinter import Misc
 import ttkbootstrap as ttk
 from ttkbootstrap.constants import *
 from Constants import *
-import Header as hdr
 
+class VideoPlayer(ttk.Frame):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.pack(side=TOP,
+                  padx=PADX,
+                  pady=PADY,
+                  expand=YES,
+                  fill=BOTH
+                )
+        
+        """Create frame to contain media"""
+        self.imgAtras = ttk.PhotoImage(name='Player', file=PATH / 'mp_background.png')
+        
+        self.media = ttk.Label(self, image=self.imgAtras)
+        self.media.pack(fill=BOTH, expand=YES)
+    
+class VideoMeter(ttk.Frame):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.pack(side=TOP,
+                  padx=PADX,
+                  pady=PADY,
+                  fill=X
+                )       
+        
+        """Create frame with progress meter with lables"""
+        container = ttk.Frame(master = self,relief=kwargs['relief'])
+        container.pack(side=TOP,fill=X, expand=YES, pady=10)
+             
+        self.elapse = ttk.Label(container, text='00:00')
+        self.elapse.pack(side=LEFT, padx=10)
+
+        self.scale = ttk.Scale(
+            master=container, 
+            command=self.on_progress, 
+            bootstyle=SECONDARY
+        )
+        self.scale.pack(side=LEFT, fill=X, expand=YES)
+
+        self.remain = ttk.Label(container, text='03:10')
+        self.remain.pack(side=LEFT, fill=X, padx=10)
+        
+    def on_progress(self, val: float):
+        """Update progress labels when the scale is updated."""
+        elapsed = self.elapsed_var.get()
+        remaining = self.remain_var.get()
+        total = int(elapsed + remaining)
+        
+        elapse = int(float(val) * total)
+        elapse_min = elapse // 60
+        elapse_sec = elapse % 60
+        
+        remain_tot = total - elapse
+        remain_min = remain_tot // 60
+        remain_sec = remain_tot % 60
+
+        self.elapsed_var.set(elapse)
+        self.remain_var.set(remain_tot)
+
+        self.elapse.configure(text=f'{elapse_min:02d}:{elapse_sec:02d}')
+        self.remain.configure(text=f'{remain_min:02d}:{remain_sec:02d}')
+
+class VideoControls(ttk.Frame):
+    btnAtras :ttk.Button
+    btnPlay :ttk.Button
+    btnPause: ttk.Button
+    btnAdelante: ttk.Button
+    
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.pack(side=BOTTOM,
+                  padx=PADX,
+                  pady=PADY,
+                  anchor=CENTER
+                )
+        self.imgAtras = ttk.PhotoImage(name='Rewind', file=PATH / 'hacia-atras.png')
+        self.imgAtras = self.imgAtras.subsample(16)
+        self.imgPlay = ttk.PhotoImage(name='Play', file=PATH / 'video.png')
+        self.imgPlay = self.imgPlay.subsample(16)
+        self.imgPause = ttk.PhotoImage(name='Pause', file=PATH / 'pausa.png')
+        self.imgPause = self.imgPause.subsample(16)
+        self.imgAdelante = ttk.PhotoImage(name='Adelante', file=PATH / 'adelante.png')
+        self.imgAdelante = self.imgAdelante.subsample(16)
+        
+        
+        self.btnAtras = ttk.Button(master=self,
+                                   image = self.imgAtras,
+                                   compound=CENTER,
+                                   bootstyle=DEFAULT_THEME
+                                   )
+        self.btnAtras.pack(fill=BOTH,side=LEFT,ipadx=PADX,ipady=PADY)
+        
+        self.btnPlay = ttk.Button(master=self,
+                                   image = self.imgPlay,
+                                   compound=CENTER,
+                                   bootstyle=DEFAULT_THEME
+                                   )
+        self.btnPlay.pack(fill=BOTH,side=LEFT,ipadx=PADX,ipady=PADY)
+        
+        self.btnPause = ttk.Button(master=self,
+                                   image = self.imgPause,
+                                   compound=CENTER,
+                                   bootstyle=DEFAULT_THEME
+                                   )
+        self.btnPause.pack(fill=BOTH,side=LEFT,ipadx=PADX,ipady=PADY)
+        
+        self.btnAdelante = ttk.Button(master=self,
+                                   image = self.imgAdelante,
+                                   compound=CENTER,
+                                   bootstyle=DEFAULT_THEME
+                                   )
+        self.btnAdelante.pack(fill=BOTH,side=LEFT,ipadx=PADX,ipady=PADY)
+            
 class options(ttk.Frame):
     # creates the ribbon section 
     btnOptions :ttk.Button
@@ -26,7 +137,7 @@ class options(ttk.Frame):
         
         self.btnOptions = ttk.Button(master=self,
                                     image=self.imgOptions,
-                                    text='options',
+                                    text=self.imgOptions.name,
                                     compound=TOP,
                                     bootstyle=INFO
                                     )
@@ -34,7 +145,7 @@ class options(ttk.Frame):
         
         self.btnTools = ttk.Button(master=self,
                                     image=self.imgTools,
-                                    text='Tools',
+                                    text=self.imgTools.name,
                                     compound=TOP,
                                     bootstyle=INFO
                                     )
@@ -42,13 +153,17 @@ class options(ttk.Frame):
         
         self.Method = ttk.Button(master=self,
                                     image=self.imgMethod,
-                                    text='Method',
+                                    text=self.imgMethod.name,
                                     compound=TOP,
                                     bootstyle=INFO
                                     )
         self.Method.pack(fill=BOTH,side=TOP,ipadx=PADX,ipady=PADY)
                     
-class process(ttk.Frame):
+class process(ttk.Frame):     
+    controlsVideo : VideoControls
+    videoPlayer   : VideoPlayer
+    videoMeter    : VideoMeter
+    
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.pack(fill=BOTH,
@@ -57,6 +172,75 @@ class process(ttk.Frame):
                   pady=PADY,
                   expand=YES
                 )
+        
+        # Lockin Processing, it depends of method selected
+        notebook = ttk.Notebook(self)
+        notebook.pack(fill=BOTH,expand=YES,padx=PADX,pady=PADY)
+        
+        # creation and configuration of the tab of fouriers's method
+        tabFourier = ttk.Frame(notebook, padding=PADGRAL,bootstyle = kwargs['bootstyle'])
+        notebook.add(tabFourier, text='Fourier')
+        
+        # creation and configuration of the tab of four point's method  
+        tabFourPoints = ttk.Frame(notebook, padding=PADGRAL,bootstyle = kwargs['bootstyle'])
+        notebook.add(tabFourPoints, text='Four Points')
+        
+        # creation and configuration of the tab of geometrical's method
+        tabGeometrical = ttk.Frame(notebook, padding=PADGRAL,bootstyle = kwargs['bootstyle'])
+        notebook.add(tabGeometrical, text='Geometrical')
+
+        # creation and configuration of the tab for play source of video        
+        self.tabPlayer = ttk.Frame(notebook, padding=PADGRAL,bootstyle = kwargs['bootstyle'])
+        notebook.add(self.tabPlayer, text='Play Source')
+        
+        self.videoMeter    = VideoMeter(master = self.tabPlayer,relief= kwargs['relief'],bootstyle =DEFAULT_THEME)
+        self.controlsVideo = VideoControls(master = self.tabPlayer,relief=kwargs['relief'],bootstyle=DEFAULT_THEME)
+        self.videoPlayer   = VideoPlayer(master = self.tabPlayer,relief=kwargs['relief'],bootstyle=DEFAULT_THEME)
+        
+        notebook.bind('<<NotebookTabChanged>>', self.on_tabSelected)
+        
+        
+        # Configures the scroll bar that its inserted in tabProcess
+        # wtScrollbar = ttk.Scrollbar(tabProcess)
+        # wtScrollbar.pack(side=RIGHT, fill=Y)
+        # wtScrollbar.set(0, 1)
+        
+        # wtCanvas = ttk.Canvas(
+        #     master=tabProcess,
+        #     relief=FLAT,
+        #     borderwidth=0,
+        #     selectborderwidth=0,
+        #     highlightthickness=0,
+        #     yscrollcommand=wtScrollbar.set
+        # )
+        # wtCanvas.pack(side=LEFT, fill=BOTH)
+        # wtCanvas.create_window((0, 0), window=scroll_frame, anchor=NW)
+        
+        
+    def create_player_buttons(self): 
+        """Create buttonbox with media controls"""
+        container = ttk.Frame(self.tabPlayer)
+        container.pack(side=BOTTOM,fill=BOTH)
+                
+        
+
+
+
+
+
+
+
+
+
+
+    # Event handler method for the NotebookTabChanged event
+    def on_tabSelected(self, event):
+        selected_index = event.widget.index('current')
+        selected_tab = event.widget.tab(selected_index, 'text')
+        # This code shows text into status bar 
+        self.master.master.footer.setvar('Status',f'Se seleccionó la pestaña: {selected_tab}')
+        
+        
 
 class info(ttk.Frame):
     def __init__(self, **kwargs):
@@ -138,7 +322,7 @@ class main_body(ttk.Frame):
                 )
         
         self.Options = options(master = self, relief=kwargs['relief'],bootstyle=LIGHT)
-        self.Process = process(master=self,relief=kwargs['relief'],bootstyle=SUCCESS)
+        self.Process = process(master=self,relief=kwargs['relief'],bootstyle=LIGHT)
         self.Info=info(master=self,relief=kwargs['relief'],bootstyle=INFO,width=100)
         self.rowconfigure(1,weight=1)
         
@@ -162,7 +346,7 @@ class main_footer(ttk.Frame):
         StatusBar = ttk.Label(
                     master = frmStatus,
                     textvariable='Status',
-                    font=('bold',10),
+                    font=('Helvetica', 10, 'italic'),
                     bootstyle=INFO,
                     ) 
         StatusBar.pack(fill=BOTH,padx=PADX,pady=PADY)#,ipadx=PADX,ipady=PADY)

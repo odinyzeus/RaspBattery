@@ -18,5 +18,5 @@ if __name__ == "__main__":
     
     frmPrincipal.footer.setvar('Status',f'Initializing system please wait............')   
     frmPrincipal.footer.setvar('progress',25)
-                                  
+                 
     __app.mainloop()                                        # event's loop
