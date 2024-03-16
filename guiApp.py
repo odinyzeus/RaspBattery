@@ -46,56 +46,14 @@ class Application(ttk.Frame):
             command=self._show_methods_tab  # Llamará a la función cuando se presione el botón
         )
         _options_btn.pack(side=TOP, fill=BOTH)
-    
-    # Initializing body frame
-    def _init_body(self):
-        # header initializer
-        self._body_frame = ttk.Frame(self, padding=self.Frame_Padding, bootstyle=DEFAULT_THEME,borderwidth=1, relief=SOLID, height=50)
-        self._body_frame.grid(row=1, column=0, sticky=NSEW)
-        # Creates the ribbon left section.
-        
-    
 
-    
     # Constructor 
     def __init__(self, master, **kwargs):
         super().__init__(master, **kwargs)
         self.pack(fill=BOTH, expand=YES)
-        
-                                
-        
         master.bind("<Configure>", self.adjust_content)     # bind "configure" event to adjust's method
-
-        
-        # Creates the menu
-        self._init_menu()
-        # Header section of application
-        self._init_hdr()
-        
-        # Body section of application
-        self._init_body()
-        
-        # Footer section of application
-        self._init_footer()
     
-    def _show_methods_tab(self):
-        self._status_bar.config(text=f'Presionaste el boton de configurar')
-            
-
-    
-    # Properties section   
-    @property
-    def Frame_Padding(self) -> int:
-        return self._frame_padding
-        
-    @Frame_Padding.setter
-    def Frame_Padding(self,value:int):
-        self._frame_padding = value
-    
-    
-        """_summary_
-        
-              
+        """_summary_          
         # option notebook
         self.notebook = ttk.Notebook(self)
         self.notebook.grid(row=1, column=1, sticky=NSEW, pady=(5, 0))
@@ -168,82 +126,14 @@ class ApplicationTkinter:
     wpadX = 3
     wpadY = 3
     border = 2
-    
-    def __init__(self, theme:str = "superhero") -> None:    
-        #self.Win.iconbitmap()
-        
-       
-        
-        # Creates principal frame 
-        self.main_frame = ttk.Frame(self.Win)
-        self.main_frame.pack(side=TOP, fill=BOTH, expand=True)
-        
-        # Creates status bar frame
-        self.statusbar = ttk.Label(self.Win, text="Estado: Listo", style="info.TLabel")
-        self.statusbar.pack(side=BOTTOM,fill=X,expand=True)
-        #self.statusbar.grid(row=3, column=0, columnspan=self.total_columns, sticky=EW,pady=(0, 5),ipady = 15)
-        
-    
-        self.frame_header = ttk.Frame(self.main_frame,bootstyle=SECONDARY,borderwidth=self.border)
-        self.frame_header.grid(row=0, column=0, columnspan=self.total_columns, sticky=EW)
-        #self.frame_header.pack(side=ttk.TOP, fill=ttk.BOTH, expand=True, padx=self.wpadX, pady=self.wpadY)
-        
-        self.frame_body = ttk.Frame(self.main_frame, bootstyle=SECONDARY,borderwidth=self.border)
-        self.frame_body.grid(row=1, column=0, columnspan=self.total_columns, sticky=EW)
-        #self.frame_body.pack(side=ttk.TOP, fill=ttk.BOTH, expand=True, padx=self.wpadX, pady=self.wpadY)
-        
-        self.frame_footer = ttk.Frame(self.main_frame,bootstyle=SECONDARY,borderwidth=self.border)
-        self.frame_footer.grid(row=2, column=0, columnspan=self.total_columns, sticky=EW)
-        #self.frame_footer.pack(side=ttk.TOP, fill=ttk.BOTH, expand=True, padx=self.wpadX, pady=self.wpadY)    
-        
-        
-        
-        self.add_header()
-        
-        self.Win.mainloop()
-
-    def add_header(self):
-        # Crear el frame para el header
-        pass
-
-
 
 """
-class AplicacionTkinter:
-        
-        
-    def add_body(self):
-        _summary_
-        This function makes the body appeareance and format desired
-        
-        
-        self.frame_camara_usb = tk.Frame(self.frame_body, bg="lightblue", padx=self.PadX, pady=self.PadY)
-        self.frame_camara_usb.grid(row=0, column=0, padx=self.PadX, pady=self.PadY, sticky="nsew")
-        self.add_border(self.frame_camara_usb)
-        
-        self.frame_video_archivo = tk.Frame(self.frame_body, bg="lightgreen", padx=self.PadX, pady=self.PadY)
-        self.frame_video_archivo.grid(row=1, column=0, padx=self.PadX, pady=self.PadY, sticky="nsew")
-        self.add_border(self.frame_video_archivo)
-        
-        self.frame_campos_texto = tk.Frame(self.frame_body, bg="lightyellow", padx=self.PadX, pady=self.PadY)
-        self.frame_campos_texto.grid(row=0, column=1, padx=self.PadX, pady=self.PadY, sticky="nsew")
-        self.add_border(self.frame_campos_texto)
-        
-        self.frame_info_sistema = tk.Frame(self.frame_body, bg="lightcoral", padx=self.PadX, pady=self.PadY)
-        self.frame_info_sistema.grid(row=1, column=1, padx=self.PadX, pady=self.PadY, sticky="nsew")
-        self.add_border(self.frame_info_sistema)
-
-        # Agregar contenido a los frames
-        self.add_content()
-        
-
+class AplicacionTkinter:    
     def add_border(self, frame):
     # Agregar un borde alrededor del frame
         border = tk.Frame(frame, borderwidth=2, relief="groove")
         border.pack(expand=True, fill="both")
 
-        
-        
     def add_content(self):
         # Campos de texto para datos del sistema
         tk.Label(self.frame_campos_texto, text="Datos de la cámara web").pack()
@@ -261,8 +151,6 @@ class AplicacionTkinter:
         tk.Label(self.frame_video_archivo, text="Video cargado desde archivo").pack()
         # Aquí puedes agregar el código para reproducir un video desde un archivo
 
-    
-
     def dany(self):
          # Makes the application body section
         self.frame_body   = tk.Frame(self.Win,padx=self.PadX,pady=self.PadY)
@@ -275,8 +163,5 @@ class AplicacionTkinter:
         
         
         
-        self.add_body()
-
-
-        
+        self.add_body()     
 """

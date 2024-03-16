@@ -4,35 +4,6 @@ from ttkbootstrap.constants import *
 from Constants import *
 import Header as hdr
 
-
-"""images = [                                     # Creates the  list of icons to use into the programm
-        ttk.PhotoImage(
-            name='logo',
-            file=PATH / 'icons8_broom_64px_1.png'),
-        ttk.PhotoImage(
-            name='cleaner',
-            file=PATH / 'icons8_broom_64px.png'),
-        ttk.PhotoImage(
-            name='registry',
-            file=PATH / 'icons8_registry_editor_64px.png'),
-        ttk.PhotoImage(
-            name='tools',
-            file=PATH / 'icons8_wrench_64px.png'),
-        ttk.PhotoImage(
-            name='options',
-            file=PATH / 'icons8_settings_64px.png'),
-        ttk.PhotoImage(
-            name='privacy',
-            file=PATH / 'icons8_spy_80px.png'),
-        ttk.PhotoImage(
-            name='junk',
-            file=PATH / 'icons8_trash_can_80px.png'),
-        ttk.PhotoImage(
-            name='protect',
-            file=PATH / 'icons8_protect_40px.png')
-        ]
- """           
-
 class main_menu(ttk.Menu):
     """
         Creates the principal menu of the application
@@ -48,11 +19,15 @@ class main_menu(ttk.Menu):
     
 class main_header(ttk.Frame):
     
+    imgLogo : ttk.PhotoImage
+    txtLogo : ttk.Label
+    txtHeader:ttk.Label
+    
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
-        imgLogo = ttk.PhotoImage(name='logo', file=PATH / 'icons8_broom_64px_1.png')
-        
+        self.imgLogo = ttk.PhotoImage(name='logo', file=PATH / 'icons8_broom_64px_1.png')
+               
         self.columnconfigure(1, weight=1)
         self.pack(fill=BOTH,
                   side=TOP,
@@ -70,9 +45,9 @@ class main_header(ttk.Frame):
         
         frmLogo.grid(row=0,column=0,ipadx=PADX,ipady=PADY,sticky=NSEW)
         
-        txtLogo=ttk.Label(master=frmLogo,image=imgLogo, bootstyle=(INVERSE, SECONDARY))
-        txtLogo.image = imgLogo
-        txtLogo.pack(fill=BOTH,expand=YES)                         
+        self.txtLogo=ttk.Label(master=frmLogo,image=self.imgLogo, bootstyle=(INVERSE, SECONDARY))
+        self.txtLogo.image = self.imgLogo
+        self.txtLogo.pack(fill=BOTH,expand=YES)                         
         
         frmCenter = ttk.Frame(master=self,
                             padding=kwargs['padding'],
@@ -82,7 +57,7 @@ class main_header(ttk.Frame):
                             )
         frmCenter.grid(row=0,column=1,ipadx=PADX,ipady=PADY,sticky=NSEW)
         
-        txtHeader=ttk.Label(master=frmCenter,
+        self.txtHeader=ttk.Label(master=frmCenter,
                             text='Developed by PhD. Eduardo Vargas Bernardino.....\nsistema de prueba...............\n es una prueba',
                             font=('TkDefaultFixed', 12),
                             padding=kwargs['padding'],
@@ -90,27 +65,63 @@ class main_header(ttk.Frame):
                             justify=CENTER,
                             anchor=CENTER
                             )
-        txtHeader.pack(fill=BOTH,expand=YES)
-        
-        
+        self.txtHeader.pack(fill=BOTH,expand=YES)
+              
 class main_body(ttk.Frame):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.pack(fill=BOTH,
                   side=TOP,
                   expand=YES,
-                  padx=PADGRAL,
-                  pady=PADGRAL
+                  padx=PADX,
+                  pady=PADY
                 )
         
 class main_footer(ttk.Frame):
+    StatusBar  : ttk.Label
+    ProgressBar: ttk.Progressbar
+        
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.pack(fill=X,
-                  side=BOTTOM,
-                  padx=5,
-                  pady=5
-                )    
+        self.pack(fill=BOTH,padx=PADX,pady=PADY,side=BOTTOM)
+       
+        frmStatus = ttk.Frame(master=self,
+                            relief=kwargs['relief'],
+                            height=kwargs['height']-(PADY*2)
+                            )
+        frmStatus.grid(row=0,column=0,sticky=NSEW)
+        
+        frmProgress = ttk.Frame(master=self,
+                            height=kwargs['height']-(PADY*2),
+                            relief=kwargs['relief']
+                            )
+        frmProgress.grid(row=0,column=1,sticky=NSEW)
+    
+        self.StatusBar = ttk.Label(
+                    master = frmStatus,
+                    text='Program Status',
+                    font=('bold',10),
+                    bootstyle=INFO
+                    ) 
+        self.StatusBar.pack(fill=BOTH,padx=PADX,pady=PADY)#,ipadx=PADX,ipady=PADY)
+        
+        self.ProgressBar = ttk.Progressbar(
+            master=frmProgress,
+            mode=DETERMINATE,
+            orient=HORIZONTAL,
+            value=75,
+            )
+        self.ProgressBar.place(relx=0.02,rely=0.5,relwidth=0.95,anchor=W)
+        
+        self.columnconfigure(1, weight=1)
+        # self.columnconfigure(0, weight=0)
+        # self.rowconfigure(0,weight=1)
+        
+        
+        
+        
+        
+        
         
 class main_frame(ttk.Frame):
     """
@@ -119,13 +130,14 @@ class main_frame(ttk.Frame):
     Args:
         ttk.Frame args: 
     """
-    header : ttk.Frame
-    body:ttk.Frame
+    
+    header  :main_header
+    body    :main_body
+    footer  :main_footer
     
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        
-        self.hdr = main_header(master=self,                         # Initialize the program's header
+        self.header = main_header(master=self,                         # Initialize the program's header
                             height=100,
                             relief= kwargs['relief'],
                             padding= kwargs['padding'],
@@ -138,25 +150,17 @@ class main_frame(ttk.Frame):
                             bootstyle=kwargs['bootstyle']
                             )
         
-        self.body = main_footer(master=self,                        # Initialize the program's footer
-                            height = 20,
+        self.footer = main_footer(master=self,                        # Initialize the program's footer
+                            height = 30,
                             relief= kwargs['relief'],
-                            padding= kwargs['padding'],
-                            bootstyle=ttk.INFO
+                            padding= kwargs['padding']
                             )
         
         self.pack(fill=BOTH,expand=YES)
   
 class Application(ttk.Window):
-    
-    window: ttk.Frame
-    
-    
-    
     def __init__(self, **kwargs):
         super().__init__(**kwargs)                   
-        
-        hdr.init_header(self.window)
         
         # application images
         self.window.images = [
@@ -185,7 +189,4 @@ class Application(ttk.Window):
             name='protect',
             file=PATH  / 'icons8_protect_40px.png')
         ]
-
-    
-    
-        
+       
