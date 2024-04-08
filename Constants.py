@@ -10,5 +10,5 @@ PRG_NAME            = "Digital Graphic Lock-In Amplifier"
 PRG_THEME           = "superhero"
 PADX                = 3
 PADY                = 3
-PADGRAL             = 5                 # Represents the general padding value 
+PADGRAL             = 3                 # Represents the general padding value 
 FRAME_BORDER_WIDTH  = 1                 # Represents the width of frame's border

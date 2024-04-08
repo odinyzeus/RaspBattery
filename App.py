@@ -14,7 +14,7 @@ frmPrincipal = Basics.main_frame(                           # Creates the main f
 if __name__ == "__main__":                                   
     __app.config(menu=mnu)                                  # Defines that principal menu in principal application
     __app.minsize(width=800, height=600)                    # Sets the minimum size of GUI    
-    __app.maxsize(width=1200, height=800)                   # Sets the maximum size of main window
+    __app.maxsize(width=1200, height=1024)                   # Sets the maximum size of main window
     
     frmPrincipal.footer.setvar('Status',f'Initializing system please wait............')   
     frmPrincipal.footer.setvar('progress',25)
