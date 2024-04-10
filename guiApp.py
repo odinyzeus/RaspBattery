@@ -1,10 +1,92 @@
-import tkinter as tk
-
-import Header as Hdr
-import Footer as Ftr
-import Body as Bdy 
-
+import ttkbootstrap as ttk
+from ttkbootstrap.constants import *
 from Constants import *
+from guiHeader import main_header as mh
+from guiFooter import main_footer as mf
+from guiBody import main_body as mb
+
+
+class main_menu(ttk.Menu):
+    """
+        Creates the principal menu of the application
+    """    
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.add_command(label="Archivo", command= self.dummy)
+        self.add_command(label="Editar", command= self.dummy)
+        self.add_command(label="Ayuda",command=self.dummy)
+    
+    def dummy(self):
+        print(f'presionaste el menu')
+  
+class main_frame(ttk.Frame):
+    """
+        This Class allow to create and manipuling the principal frame of the application
+        its a Frame herencied 
+    Args:
+        ttk.Frame args: 
+    """
+
+    Header  :mh
+    Body    :mb
+    Footer  :mf
+    
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.Header = mh(master=self,                         # Initialize the program's header
+                            relief= kwargs['relief'],
+                            padding= kwargs['padding'],
+                            bootstyle=ttk.SECONDARY
+                            )
+        
+        self.Footer = mf(master=self,                        # Initialize the program's footer
+                            height = 30,
+                            relief= kwargs['relief'],
+                            padding= kwargs['padding']
+                            )
+        
+        self.Body = mb(master=self,                          # Initialize the program's body
+                            relief= kwargs['relief'],
+                            padding= kwargs['padding'],
+                            bootstyle=SECONDARY
+                            )
+        
+        self.columnconfigure(0,weight=1)
+        self.rowconfigure(1,weight=1)
+        self.pack(fill=BOTH,expand=YES)      
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -18,11 +100,6 @@ def get_contained_frames(master_frame):
             contained_frames.append(widget)
     return contained_frames
 
-
-def set_gui(self:ttk.Frame):
-    Hdr.header_create(self)
-    Bdy.body_create(self)
-    Ftr.footer_create(self)
 
 
 
