@@ -1,10 +1,52 @@
 import ttkbootstrap as ttk
 from ttkbootstrap.constants import *
 from Constants import *
+
+
 from guiPlayer import VideoControls as vc
 from guiPlayer import VideoMeter    as vm
 from guiPlayer import VideoPlayer   as vp
 from guiProcess import Experiment   as de
+
+
+
+class Body_Options(ttk.Frame):
+    # creates the ribbon section 
+    btnOptions :ttk.Button
+    btnTools   :ttk.Button
+    btnMethod  :ttk.Button
+     
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.grid(row=0,column=0,sticky=NSEW)
+        self.columnconfigure(0,weight=1)
+        self.rowconfigure(3,weight=1)
+   
+        self.imgOptions = ttk.PhotoImage(name='options', file=PATH / 'icons8_settings_64px.png')    
+        self.imgTools   = ttk.PhotoImage(name='tools', file=PATH / 'icons8_wrench_64px.png')
+        self.imgMethod  = ttk.PhotoImage(name='method', file=PATH /'icons8_registry_editor_64px.png')
+        
+        self.btnOptions = ttk.Button(master=self,
+                                    image=self.imgOptions,
+                                    text=self.imgOptions.name,
+                                    compound=TOP,
+                                    bootstyle=INFO
+                                    )
+        self.btnOptions.grid(row=0,column=0,sticky=EW)
+        self.btnTools = ttk.Button(master=self,
+                                    image=self.imgTools,
+                                    text=self.imgTools.name,
+                                    compound=TOP,
+                                    bootstyle=INFO
+                                    )
+        self.btnTools.grid(row=1,column=0,sticky=EW)
+        self.Method = ttk.Button(master=self,
+                                    image=self.imgMethod,
+                                    text=self.imgMethod.name,
+                                    compound=TOP,
+                                    bootstyle=INFO
+                                    )
+        self.Method.grid(row=2,column=0,sticky=EW)        
 
 
 class Body_Process(ttk.Frame): 

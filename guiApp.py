@@ -1,44 +1,6 @@
 import ttkbootstrap as ttk
 from ttkbootstrap.constants import *
 from Constants import *
-
-class Body_Options(ttk.Frame):
-    # creates the ribbon section 
-    btnOptions :ttk.Button
-    btnTools   :ttk.Button
-    btnMethod  :ttk.Button
-     
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self.grid(row=0,column=0,sticky=NSEW)
-        self.columnconfigure(0,weight=1)
-        self.rowconfigure(3,weight=1)
-   
-        self.imgOptions = ttk.PhotoImage(name='options', file=PATH / 'icons8_settings_64px.png')    
-        self.imgTools   = ttk.PhotoImage(name='tools', file=PATH / 'icons8_wrench_64px.png')
-        self.imgMethod  = ttk.PhotoImage(name='method', file=PATH /'icons8_registry_editor_64px.png')
-        
-        self.btnOptions = ttk.Button(master=self,
-                                    image=self.imgOptions,
-                                    text=self.imgOptions.name,
-                                    compound=TOP,
-                                    bootstyle=INFO
-                                    )
-        self.btnOptions.grid(row=0,column=0,sticky=EW)
-        self.btnTools = ttk.Button(master=self,
-                                    image=self.imgTools,
-                                    text=self.imgTools.name,
-                                    compound=TOP,
-                                    bootstyle=INFO
-                                    )
-        self.btnTools.grid(row=1,column=0,sticky=EW)
-        self.Method = ttk.Button(master=self,
-                                    image=self.imgMethod,
-                                    text=self.imgMethod.name,
-                                    compound=TOP,
-                                    bootstyle=INFO
-                                    )
-        self.Method.grid(row=2,column=0,sticky=EW)        
   
 class main_menu(ttk.Menu):
     """
@@ -148,9 +110,86 @@ class main_footer(ttk.Frame):
         self.setvar('Status',txt_Status_Default)
         self.setvar('Progress',25)
 
+class body_Info(ttk.LabelFrame):
+
+    footer : main_footer            # Set's the footer property, it's used to present progress and status info
+    frmexperiment : ttk.LabelFrame  # Create's the  experiment's information frame, it contains all info related to experiment 
+    varModulation : ttk.Variable
+
+    def register(self, listener):               # Mètodo que registra a los receptores de eventos de esta clase
+        self.__listener.append(listener)
+    
+    def unregister(self, listener):             # Mètodo que elimina el registro de los receptores de eventos
+        self.__listener.remove(listener)
+ 
+    def Modulation_Check(self, *args):
+        try:
+            vmodulation = float(self.varModulation.get())
+            self.footer.lblStatus.config(text= f'El valor introducido es: {vmodulation}')
+        except ValueError:
+            # Maneja el caso en que el valor no sea un número válido
+            vmodulation = 0.0
+
+    def push_widgets(self):
+        # It create's the experiment information's frame 
+        self.frmexperiment = ttk.LabelFrame(master = self, 
+                                        text='Experiment:',
+                                        relief=ttk.SOLID,
+                                        padding=3,
+                                        bootstyle=ttk.INFO
+                                        )
+        self.frmexperiment.pack(side=TOP,expand=YES,fill=X)
+
+        # It create the information's fields inside  
+        frmModulation = ttk.Frame(master=self.frmexperiment,
+                                       padding=3)
+        frmModulation.pack(side=TOP,fill=X,expand=YES)
+
+        lblModulation = ttk.Label(master=frmModulation,
+                                  text='Modulation:',
+                                  font=('Helvetica', 10, 'italic')
+                                  )
+        lblModulation.pack(side=LEFT,padx=PADX)
+
+        self.varModulation = ttk.Variable(master = frmModulation, name = 'varModulation', value = '0.0' )
+        inModulation = ttk.Entry(frmModulation, 
+                                 textvariable=self.varModulation,
+                                 width=8,
+                                 justify=CENTER,
+                                 font=('Helvetica', 10, 'italic')
+                                 )
+        inModulation.pack(side=LEFT,padx=PADX,expand=YES,fill=X)
+
+        lblHz = ttk.Label(master=frmModulation,text='Hz')
+        lblHz.pack(padx=PADX)
+
+        self.footer.setvar('Status',f'The information frame created......')
+
+    def __init__(self, **kwargs):
+        self.footer = kwargs.pop('footer',None)
+        super().__init__(**kwargs)
+        self.config(relief=ttk.SOLID)
+        self.config(text='Information')
+        self.config(padding=3)
+        self.config(bootstyle=ttk.INFO)
+        self.grid(row=0,column=0,sticky=NSEW)
+        self.columnconfigure(1, weight=1)
+        self.rowconfigure(0,weight=1)
+        self.footer.setvar('Status',f'The Information frame is creating.....')
+        self.push_widgets()
+        self.varModulation.trace_add("write", self.Modulation_Check)
+
+
+
 class main_body(ttk.Frame):
-    footer : main_footer
-    body_options: Body_Options
+    """app's Main body, all sections are configurated inside of this.
+
+    Args:
+        ttk.frame : this class is inherited of ttk.Frame
+    """
+
+    footer : main_footer            # sets the footer property, it's used to present progress and status info
+    info   : body_Info              # Sets the info's section frame 
 
     def __init__(self, **kwargs):
         self.footer = kwargs.pop('footer',None)
@@ -161,8 +200,10 @@ class main_body(ttk.Frame):
         self.grid(row=1,column=0,sticky=NSEW)
         self.columnconfigure(1, weight=1)
         self.rowconfigure(0,weight=1)
+
+        self.info = body_Info(master = self, footer = self.footer)
             
-        self.body_options = Body_Options(master = self)
+        # self.body_options = Body_Options(master = self)
         # self.Process = Body_Process(master=self,relief=kwargs['relief'],bootstyle=LIGHT)
                   
 
