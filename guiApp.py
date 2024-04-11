@@ -1,11 +1,45 @@
 import ttkbootstrap as ttk
 from ttkbootstrap.constants import *
 from Constants import *
-from guiHeader import main_header as mh
-from guiFooter import main_footer as mf
-from guiBody import main_body as mb
 
-
+class Body_Options(ttk.Frame):
+    # creates the ribbon section 
+    btnOptions :ttk.Button
+    btnTools   :ttk.Button
+    btnMethod  :ttk.Button
+     
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.grid(row=0,column=0,sticky=NSEW)
+        self.columnconfigure(0,weight=1)
+        self.rowconfigure(3,weight=1)
+   
+        self.imgOptions = ttk.PhotoImage(name='options', file=PATH / 'icons8_settings_64px.png')    
+        self.imgTools   = ttk.PhotoImage(name='tools', file=PATH / 'icons8_wrench_64px.png')
+        self.imgMethod  = ttk.PhotoImage(name='method', file=PATH /'icons8_registry_editor_64px.png')
+        
+        self.btnOptions = ttk.Button(master=self,
+                                    image=self.imgOptions,
+                                    text=self.imgOptions.name,
+                                    compound=TOP,
+                                    bootstyle=INFO
+                                    )
+        self.btnOptions.grid(row=0,column=0,sticky=EW)
+        self.btnTools = ttk.Button(master=self,
+                                    image=self.imgTools,
+                                    text=self.imgTools.name,
+                                    compound=TOP,
+                                    bootstyle=INFO
+                                    )
+        self.btnTools.grid(row=1,column=0,sticky=EW)
+        self.Method = ttk.Button(master=self,
+                                    image=self.imgMethod,
+                                    text=self.imgMethod.name,
+                                    compound=TOP,
+                                    bootstyle=INFO
+                                    )
+        self.Method.grid(row=2,column=0,sticky=EW)        
+  
 class main_menu(ttk.Menu):
     """
         Creates the principal menu of the application
@@ -26,41 +60,121 @@ class main_frame(ttk.Frame):
     Args:
         ttk.Frame args: 
     """
-
-    Header  :mh
-    Body    :mb
-    Footer  :mf
-    
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.Header = mh(master=self,                         # Initialize the program's header
-                            relief= kwargs['relief'],
-                            padding= kwargs['padding'],
-                            bootstyle=ttk.SECONDARY
-                            )
-        
-        self.Footer = mf(master=self,                        # Initialize the program's footer
-                            height = 30,
-                            relief= kwargs['relief'],
-                            padding= kwargs['padding']
-                            )
-        
-        self.Body = mb(master=self,                          # Initialize the program's body
-                            relief= kwargs['relief'],
-                            padding= kwargs['padding'],
-                            bootstyle=SECONDARY
-                            )
-        
+        self.config(relief=ttk.SOLID)
+        self.config(padding=3)
+        self.config(bootstyle=ttk.PRIMARY)
         self.columnconfigure(0,weight=1)
         self.rowconfigure(1,weight=1)
-        self.pack(fill=BOTH,expand=YES)      
+        self.pack(fill=BOTH,expand=YES)
+
+class main_header(ttk.Frame):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.config(relief=ttk.SOLID)
+        self.config(padding=3)
+        self.config(bootstyle=ttk.SECONDARY)
+        self.grid(row=0,column=0,sticky=NSEW)
+        self.columnconfigure(1,weight=1)
+
+        self.frmLogo = ttk.Frame(master = self)
+        self.frmCenter = ttk.Frame(master = self)
+        self.imgLogo = ttk.PhotoImage(name='logo', file=PATH / 'icons8_broom_64px_1.png')
+        self.txtLogo = ttk.Label(master=self.frmLogo,image=self.imgLogo, bootstyle=(INVERSE, SECONDARY))
+        self.txtHeader = ttk.Label(master=self.frmCenter) 
+        
+        self.frmLogo.config(relief=SOLID)
+        self.frmLogo.config(bootstyle=DEFAULT_THEME)
+        self.frmLogo.config(padding= self.cget('padding'))
+        self.frmLogo.grid(row=0,column=0,sticky=NSEW)
+        
+        self.txtLogo.image = self.imgLogo
+        self.txtLogo.pack(fill=BOTH,expand=YES)
+
+        self.frmCenter.config(relief=SOLID)
+        self.frmCenter.config(bootstyle=DEFAULT_THEME)
+        self.frmCenter.config(padding= self.cget('padding'))
+        self.frmCenter.grid(row=0,column=1,sticky=NSEW)
+
+        self.txtHeader.config(text= PRG_HDR_TEXT)
+        self.txtHeader.config(font=('TkDefaultFixed', 12))
+        self.txtHeader.config(padding= self.cget('padding'))
+        self.txtHeader.config(bootstyle=(INVERSE, SECONDARY))
+        self.txtHeader.config(justify=CENTER)
+        self.txtHeader.config(anchor=CENTER)
+        self.txtHeader.pack(fill=BOTH,expand=YES)
+
+class main_footer(ttk.Frame):
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.config(relief=ttk.SOLID)
+        self.config(padding=3)
+        self.config(bootstyle=ttk.SECONDARY)
+        self.grid(row=2,column=0,sticky=NSEW)
+        self.columnconfigure(1, weight=1)
+        self.rowconfigure(0,weight=1)
+        
+        self.frmStatus = ttk.Frame(master = self)
+        self.frmProgress=ttk.Frame(master= self)
+        self.lblStatus = ttk.Label(master = self.frmStatus)
+        self.progressBar = ttk.Progressbar(master=self.frmProgress)
+
+        ttk.Label(self.frmProgress,font=('Helvetica', 10, 'italic'), text='%').pack(side=RIGHT,padx=PADX)
+        ttk.Label(self.frmProgress,font=('Helvetica', 10, 'italic'), textvariable='Progress').pack(side=RIGHT)
+
+        self.frmStatus.config(relief=ttk.SOLID)
+        self.frmStatus.config(bootstyle=ttk.SECONDARY)
+        self.frmStatus.grid(row=0,column=0,sticky=NSEW)
+
+        self.frmProgress.config(relief=ttk.SOLID)
+        self.frmProgress.config(bootstyle=ttk.SECONDARY) 
+        self.frmProgress.grid(row=0,column=1,sticky=NSEW)
+
+        self.lblStatus.config(text= txt_Status_Default)
+        self.lblStatus.config(font=('Helvetica', 10, 'italic'))
+        self.lblStatus.config(padding= self.cget('padding'))
+        self.lblStatus.config(bootstyle=INFO)
+        self.lblStatus.config(textvariable= 'Status')
+        self.lblStatus.pack(fill=BOTH,expand=YES)
+
+        self.progressBar.config(mode=DETERMINATE)
+        self.progressBar.config(orient=HORIZONTAL)
+        self.progressBar.config(variable='Progress')
+        self.progressBar.place(relx=0.02,rely=0.5,relwidth=0.92,anchor=W)
+
+        # settings of control's variables
+        self.setvar('Status',txt_Status_Default)
+        self.setvar('Progress',25)
+
+class main_body(ttk.Frame):
+    footer : main_footer
+    body_options: Body_Options
+
+    def __init__(self, **kwargs):
+        self.footer = kwargs.pop('footer',None)
+        super().__init__(**kwargs)
+        self.config(relief=ttk.SOLID)
+        self.config(padding=3)
+        self.config(bootstyle=ttk.SECONDARY)
+        self.grid(row=1,column=0,sticky=NSEW)
+        self.columnconfigure(1, weight=1)
+        self.rowconfigure(0,weight=1)
+            
+        self.body_options = Body_Options(master = self)
+        # self.Process = Body_Process(master=self,relief=kwargs['relief'],bootstyle=LIGHT)
+                  
 
 
 
 
-
-
-
+if __name__ == "__main__":
+    __app = ttk.Window(PRG_NAME, PRG_THEME)         # Creates the principal window for application
+    frm = main_frame(master=__app)
+    __app.config(menu=main_menu(master=__app))      # Defines that principal menu in principal application
+    __app.minsize(width=800, height=600)            # Sets the minimum size of GUI   
+    __app.mainloop()                                # event's loop
 
 
 
