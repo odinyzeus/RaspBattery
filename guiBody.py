@@ -9,46 +9,6 @@ from guiPlayer import VideoPlayer   as vp
 from guiProcess import Experiment   as de
 
 
-
-class Body_Options(ttk.Frame):
-    # creates the ribbon section 
-    btnOptions :ttk.Button
-    btnTools   :ttk.Button
-    btnMethod  :ttk.Button
-     
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self.grid(row=0,column=0,sticky=NSEW)
-        self.columnconfigure(0,weight=1)
-        self.rowconfigure(3,weight=1)
-   
-        self.imgOptions = ttk.PhotoImage(name='options', file=PATH / 'icons8_settings_64px.png')    
-        self.imgTools   = ttk.PhotoImage(name='tools', file=PATH / 'icons8_wrench_64px.png')
-        self.imgMethod  = ttk.PhotoImage(name='method', file=PATH /'icons8_registry_editor_64px.png')
-        
-        self.btnOptions = ttk.Button(master=self,
-                                    image=self.imgOptions,
-                                    text=self.imgOptions.name,
-                                    compound=TOP,
-                                    bootstyle=INFO
-                                    )
-        self.btnOptions.grid(row=0,column=0,sticky=EW)
-        self.btnTools = ttk.Button(master=self,
-                                    image=self.imgTools,
-                                    text=self.imgTools.name,
-                                    compound=TOP,
-                                    bootstyle=INFO
-                                    )
-        self.btnTools.grid(row=1,column=0,sticky=EW)
-        self.Method = ttk.Button(master=self,
-                                    image=self.imgMethod,
-                                    text=self.imgMethod.name,
-                                    compound=TOP,
-                                    bootstyle=INFO
-                                    )
-        self.Method.grid(row=2,column=0,sticky=EW)        
-
-
 class Body_Process(ttk.Frame): 
     footer          : mf    
     VideoControls   : vc
@@ -64,18 +24,11 @@ class Body_Process(ttk.Frame):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         
-        self.footer = kwargs['master'].footer
-        self.grid(row=0,column=1,sticky=NSEW)
-        # Lockin Processing, it depends of method selected
-        self.notebook = ttk.Notebook(master=self,height=600)
-        self.notebook.pack(expand=YES,padx=PADX,pady=PADY,fill=BOTH)
 
-        self.create_tabs(**kwargs)
+        
     
     def create_tabs(self,**kwargs):
-        # creation and configuration of the tab of fouriers's method
-        tabFourier = ttk.Frame(self.notebook, padding=PADGRAL,bootstyle = kwargs['bootstyle'])
-        self.notebook.add(tabFourier, text=txtTabFourier)
+        
         
         # creation and configuration of the tab of four point's method  
         tabFourPoints = ttk.Frame(self.notebook, padding=PADGRAL,bootstyle = kwargs['bootstyle'])
@@ -100,11 +53,10 @@ class Body_Process(ttk.Frame):
         self.create_tab_experiment(**kwargs)
 
     def create_tab_player(self,**kwargs):
-        # Creation and configuration of video's player into play's source tab
-        self.tabPlayer.columnconfigure(0,weight=1)
-        self.tabPlayer.rowconfigure(1,weight=1)
-        self.videoMeter    = vm(master = self.tabPlayer,relief= kwargs['relief'],bootstyle =DEFAULT_THEME)
-        self.videoPlayer   = vp(master = self.tabPlayer,relief=kwargs['relief'],bootstyle=DEFAULT_THEME)
+        
+
+
+        
         self.VideoControls = vc(master = self.tabPlayer,relief=kwargs['relief'],bootstyle=DEFAULT_THEME)    
         
     def create_tab_experiment(self,**kwargs):
@@ -120,10 +72,6 @@ class Body_Process(ttk.Frame):
         selected_tab = event.widget.tab(selected_index, 'text')
         # This code shows text into status bar 
         self.footer.setvar('prg_status',f'Se seleccionó la pestaña: {selected_tab}')
-
-
-    def Modulation_Changed(self,event):
-        self.footer.setvar('prg_status',f'Nuevo Valor de Modulacion: {event}')
 
 
 

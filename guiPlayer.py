@@ -1,6 +1,41 @@
 import ttkbootstrap as ttk
+import cv2
 from ttkbootstrap.constants import *
 from Constants import *
+from PIL import Image, ImageTk
+
+def getDuration(video:cv2.VideoCapture)->str:
+    # Obtiene la cantidad total de frames
+    frames = video.get(cv2.CAP_PROP_FRAME_COUNT)
+    
+    # Obtiene los frames por segundo
+    fps = video.get(cv2.CAP_PROP_FPS)
+
+    # Calcula la duración en segundos
+    duration_seconds = frames / fps
+
+    # Convierte la duración a minutos y segundos
+    minutes = int(duration_seconds // 60)
+    seconds = int(duration_seconds % 60)
+
+    # Formatea la duración como una cadena 'mm:ss'
+    duration_str = f'{minutes:02d}:{seconds:02d}'
+
+    return duration_str
+
+class Event:
+    def __init__(self):
+        self._observers = []
+
+    def register(self, observer):
+        self._observers.append(observer)
+
+    def unregister(self, observer):
+        self._observers.remove(observer)
+
+    def notify(self, *args, **kwargs):
+        for observer in self._observers:
+            observer(*args, **kwargs)
 
 class VideoControls(ttk.Frame):
     btnAtras :ttk.Button
@@ -52,12 +87,30 @@ class VideoControls(ttk.Frame):
         self.columnconfigure(5,weight=1)
         
 class VideoMeter(ttk.Frame):
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self.grid(row=0,column=0,sticky=EW)
-        
+
+    remain_var : ttk.DoubleVar
+    elapsed_var: ttk.DoubleVar
+    _status_event   = Event()         # Creates the event of status controller
+    
+
+    @property
+    def status(self):
+        return self._status
+
+    @status.setter
+    def status(self,value:str):
+        self._status = int(value)
+        self._status_event.notify(self._status) # Raises the status's info changed event
+
+    def update_remain(self, value):
+        self.remain_var.set(value)
+
+    def update_position(self, value:int):
+        self.scale.set(value)
+
+    def push_widget(self):
         """Create frame with progress meter with lables"""
-        container = ttk.Frame(master = self,relief=kwargs['relief'])
+        container = ttk.Frame(master = self)
         container.pack(side=TOP,fill=X, expand=YES, pady=10)
              
         self.elapse = ttk.Label(container, text='00:00')
@@ -66,42 +119,73 @@ class VideoMeter(ttk.Frame):
         self.scale = ttk.Scale(
             master=container, 
             command=self.on_progress, 
-            bootstyle=SECONDARY
+            bootstyle=SECONDARY,
+            from_=0,
+            to=100
         )
         self.scale.pack(side=LEFT, fill=X, expand=YES)
-
-        self.remain = ttk.Label(container, text='03:10')
+        self.remain_var = ttk.DoubleVar(master=container,name='varRemain', value=190)
+        self.remain = ttk.Label(container, text='03:10',textvariable = self.remain_var)
         self.remain.pack(side=LEFT, fill=X, padx=10)
+        
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.config(relief=FRM_BORDER)
+        self.config(padding=PADGRAL)
+        self.config(bootstyle=ttk.DEFAULT_THEME)
+        self.grid(row=0,column=0,sticky=EW)
+        self.push_widget()
+        self.scale.set(50)
+    
         
     def on_progress(self, val: float):
         """Update progress labels when the scale is updated."""
-        elapsed = self.elapsed_var.get()
-        remaining = self.remain_var.get()
-        total = int(elapsed + remaining)
-        
-        elapse = int(float(val) * total)
-        elapse_min = elapse // 60
-        elapse_sec = elapse % 60
-        
-        remain_tot = total - elapse
-        remain_min = remain_tot // 60
-        remain_sec = remain_tot % 60
-
-        self.elapsed_var.set(elapse)
-        self.remain_var.set(remain_tot)
-
-        self.elapse.configure(text=f'{elapse_min:02d}:{elapse_sec:02d}')
-        self.remain.configure(text=f'{remain_min:02d}:{remain_sec:02d}')
+        # elapsed = self.elapsed_var.get()
+        # remaining = self.remain_var.get()
+        # total = int(elapsed + remaining)
+        self.status = self.scale.get()
 
 class VideoPlayer(ttk.Frame):
+
     media :ttk.Label
-    
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self.grid(row=1,column=0,sticky=NSEW)
-        
+    _status_event   = Event()         # Creates the event of status controller
+    _status         = 'Modulo de reproductor'
+
+    @property
+    def status(self):
+        return self._status
+
+    @status.setter
+    def status(self, value:str):
+        self._status = int(value)
+        self._status_event.notify(self._status) # Raises the status's info changed event
+
+    def push_widget(self):
         """Create frame to contain media"""
-        self.imgAtras = ttk.PhotoImage(name='Player', file=PATH / 'mp_background.png')
+        img_path = PATH / 'mp_background.png'
+        img_original = Image.open(img_path)
+
+        # Calcular la altura proporcional
+        ancho_objetivo = 480
+        proporcion = ancho_objetivo / img_original.width
+        altura_objetivo = int(img_original.height * proporcion)
+        
+        # Redimensionar la imagen
+        img_redimensionada = img_original.resize((ancho_objetivo, altura_objetivo), Image.ANTIALIAS)
+        
+        self.imgAtras = ImageTk.PhotoImage(img_redimensionada)
+
+        # self.imgAtras = ttk.PhotoImage(name='Player', file=PATH / )
         self.media = ttk.Label(master=self, image=self.imgAtras)
         self.media.pack(padx=PADX,pady=PADY)
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.config(relief=FRM_BORDER)
+        self.config(padding=PADGRAL)
+        self.config(bootstyle=ttk.DEFAULT_THEME)
+        self.grid(row=1,column=0,sticky=NSEW)
+        self.push_widget()
+        
+        
  

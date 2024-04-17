@@ -1,7 +1,26 @@
 import ttkbootstrap as ttk
+import cv2
 from ttkbootstrap.constants import *
 from Constants import *
-  
+from tkinter.filedialog import askopenfilename
+from PIL import Image, ImageTk
+import guiPlayer
+
+
+class Event:
+    def __init__(self):
+        self._observers = []
+
+    def register(self, observer):
+        self._observers.append(observer)
+
+    def unregister(self, observer):
+        self._observers.remove(observer)
+
+    def notify(self, *args, **kwargs):
+        for observer in self._observers:
+            observer(*args, **kwargs)
+
 class main_menu(ttk.Menu):
     """
         Creates the principal menu of the application
@@ -15,29 +34,14 @@ class main_menu(ttk.Menu):
     def dummy(self):
         print(f'presionaste el menu')
   
-class main_frame(ttk.Frame):
-    """
-        This Class allow to create and manipuling the principal frame of the application
-        its a Frame herencied 
-    Args:
-        ttk.Frame args: 
-    """
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self.config(relief=ttk.SOLID)
-        self.config(padding=3)
-        self.config(bootstyle=ttk.PRIMARY)
-        self.columnconfigure(0,weight=1)
-        self.rowconfigure(1,weight=1)
-        self.pack(fill=BOTH,expand=YES)
-
 class main_header(ttk.Frame):
+
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.config(relief=ttk.SOLID)
-        self.config(padding=3)
+        self.config(relief=FRM_BORDER)
+        self.config(padding=PADGRAL)
         self.config(bootstyle=ttk.SECONDARY)
-        self.grid(row=0,column=0,sticky=NSEW)
+        self.grid(row=0,column=0,columnspan=3,sticky=NSEW)
         self.columnconfigure(1,weight=1)
 
         self.frmLogo = ttk.Frame(master = self)
@@ -46,7 +50,7 @@ class main_header(ttk.Frame):
         self.txtLogo = ttk.Label(master=self.frmLogo,image=self.imgLogo, bootstyle=(INVERSE, SECONDARY))
         self.txtHeader = ttk.Label(master=self.frmCenter) 
         
-        self.frmLogo.config(relief=SOLID)
+        self.frmLogo.config(relief=FRM_BORDER)
         self.frmLogo.config(bootstyle=DEFAULT_THEME)
         self.frmLogo.config(padding= self.cget('padding'))
         self.frmLogo.grid(row=0,column=0,sticky=NSEW)
@@ -54,7 +58,7 @@ class main_header(ttk.Frame):
         self.txtLogo.image = self.imgLogo
         self.txtLogo.pack(fill=BOTH,expand=YES)
 
-        self.frmCenter.config(relief=SOLID)
+        self.frmCenter.config(relief=FRM_BORDER)
         self.frmCenter.config(bootstyle=DEFAULT_THEME)
         self.frmCenter.config(padding= self.cget('padding'))
         self.frmCenter.grid(row=0,column=1,sticky=NSEW)
@@ -68,69 +72,209 @@ class main_header(ttk.Frame):
         self.txtHeader.pack(fill=BOTH,expand=YES)
 
 class main_footer(ttk.Frame):
+    
+    __status    : ttk.Variable
+    __progress  : ttk.Variable
+
+    __lblStatus : ttk.Label
+    
+    @property
+    def lblStatus(self)->ttk.Label:
+        return self.__lblStatus
+    
+    @lblStatus.setter
+    def lblStatus(self,value):
+        self.__lblStatus = value
+
+    def update_status(self, status):
+        self.__status.set(status)
+
+    def update_progress(self,progress):
+        self.__progress.set(progress)
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.config(relief=ttk.SOLID)
-        self.config(padding=3)
+        self.config(relief=FRM_BORDER)
+        self.config(padding=PADGRAL)
         self.config(bootstyle=ttk.SECONDARY)
-        self.grid(row=2,column=0,sticky=NSEW)
+        self.grid(row=3,column=0,sticky=NSEW,columnspan=3)
         self.columnconfigure(1, weight=1)
         self.rowconfigure(0,weight=1)
         
-        self.frmStatus = ttk.Frame(master = self)
-        self.frmProgress=ttk.Frame(master= self)
-        self.lblStatus = ttk.Label(master = self.frmStatus)
-        self.progressBar = ttk.Progressbar(master=self.frmProgress)
+        frmStatus      = ttk.Frame(master = self)
+        frmProgress    = ttk.Frame(master= self)
+        
+        progressBar    = ttk.Progressbar(master=frmProgress)
+        
+        self.__lblStatus    = ttk.Label(master = frmStatus)
+        self.__status       = ttk.StringVar(master = frmStatus, name = 'status', value = 'This is the initial message' )
+        self.__progress     = ttk.Variable(master = frmProgress, name = 'progress', value = 10)
 
-        ttk.Label(self.frmProgress,font=('Helvetica', 10, 'italic'), text='%').pack(side=RIGHT,padx=PADX)
-        ttk.Label(self.frmProgress,font=('Helvetica', 10, 'italic'), textvariable='Progress').pack(side=RIGHT)
 
-        self.frmStatus.config(relief=ttk.SOLID)
-        self.frmStatus.config(bootstyle=ttk.SECONDARY)
-        self.frmStatus.grid(row=0,column=0,sticky=NSEW)
+        frmStatus.config(relief=FRM_BORDER)
+        # frmStatus.config(bootstyle=ttk.SECONDARY)
+        frmStatus.grid(row=0,column=0,sticky=NSEW)
 
-        self.frmProgress.config(relief=ttk.SOLID)
-        self.frmProgress.config(bootstyle=ttk.SECONDARY) 
-        self.frmProgress.grid(row=0,column=1,sticky=NSEW)
+        frmProgress.config(relief=FRM_BORDER)
+        frmProgress.grid(row=0,column=1,sticky=NSEW)
 
-        self.lblStatus.config(text= txt_Status_Default)
-        self.lblStatus.config(font=('Helvetica', 10, 'italic'))
-        self.lblStatus.config(padding= self.cget('padding'))
-        self.lblStatus.config(bootstyle=INFO)
-        self.lblStatus.config(textvariable= 'Status')
-        self.lblStatus.pack(fill=BOTH,expand=YES)
+        ttk.Label(master=frmProgress,font=(PRG_FONT, PRG_FONT_SIZE, PRG_FONT_PROP), text='%').pack(side=RIGHT,padx=PADX)
+        ttk.Label(master=frmProgress,font=(PRG_FONT, PRG_FONT_SIZE, PRG_FONT_PROP), textvariable='progress').pack(side=RIGHT,padx=PADX)
 
-        self.progressBar.config(mode=DETERMINATE)
-        self.progressBar.config(orient=HORIZONTAL)
-        self.progressBar.config(variable='Progress')
-        self.progressBar.place(relx=0.02,rely=0.5,relwidth=0.92,anchor=W)
+        self.__lblStatus.config(text= txt_Status_Default)
+        self.__lblStatus.config(font=(PRG_FONT, PRG_FONT_SIZE, PRG_FONT_PROP))
+        self.__lblStatus.config(padding= self.cget('padding'))
+        self.__lblStatus.config(bootstyle=INFO)
+        self.__lblStatus.config(textvariable=self.__status)
+        self.__lblStatus.pack(fill=BOTH,expand=YES)
+
+        progressBar.config(mode=DETERMINATE)
+        progressBar.config(orient=HORIZONTAL)
+        progressBar.config(variable=self.__progress)
+        progressBar.place(relx=0.02,rely=0.5,relwidth=0.92,anchor=W)
 
         # settings of control's variables
-        self.setvar('Status',txt_Status_Default)
-        self.setvar('Progress',25)
+        self.update_status(txt_Status_Default)
+        self.update_progress(35)
 
-class body_Info(ttk.LabelFrame):
+class Body_Options(ttk.Frame):
+    # creates the ribbon section 
+    btnOptions :ttk.Button
+    btnTools   :ttk.Button
+    btnMethod  :ttk.Button
 
-    footer : main_footer            # Set's the footer property, it's used to present progress and status info
-    frmexperiment : ttk.LabelFrame  # Create's the  experiment's information frame, it contains all info related to experiment 
-    varModulation : ttk.Variable
+    def putButtons(self):
+        self.btnOptions = ttk.Button(master=self,
+                                    image=self.imgOptions,
+                                    text=self.imgOptions.name,
+                                    compound=TOP,
+                                    bootstyle=INFO
+                                    )
+        self.btnTools = ttk.Button(master=self,
+                                    image=self.imgTools,
+                                    text=self.imgTools.name,
+                                    compound=TOP,
+                                    bootstyle=INFO
+                                    )
+        self.Method = ttk.Button(master=self,
+                                    image=self.imgMethod,
+                                    text=self.imgMethod.name,
+                                    compound=TOP,
+                                    bootstyle=INFO
+                                    )
+        
+        self.btnOptions.grid(row=0,column=0,sticky=EW)
+        self.btnTools.grid(row=1,column=0,sticky=EW)
+        self.Method.grid(row=2,column=0,sticky=EW) 
+     
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.grid(row=1,column=0,sticky=NS, rowspan=2)
+        self.columnconfigure(0,weight=1)
+        self.rowconfigure(3,weight=1)  
+        self.config(relief=ttk.SOLID)
+        self.config(padding=3)
+        self.config(bootstyle=ttk.INFO)
 
-    def register(self, listener):               # Mètodo que registra a los receptores de eventos de esta clase
-        self.__listener.append(listener)
+        self.imgOptions = ttk.PhotoImage(name='options', file=PATH / 'icons8_settings_64px.png')    
+        self.imgTools   = ttk.PhotoImage(name='tools', file=PATH / 'icons8_wrench_64px.png')
+        self.imgMethod  = ttk.PhotoImage(name='method', file=PATH /'icons8_registry_editor_64px.png')
+        self.putButtons()
+
+class body_Info(ttk.Labelframe):
+
+    frmexperiment   : ttk.Labelframe  # Creates the  experiment's information frame, it contains all info related to experiment
+    frmVideo        : ttk.Labelframe 
+    varModulation   : ttk.Variable    # Creates the  control's variable for modulation frecuency
+    varFrames       : ttk.Variable
+    varPeriod       : ttk.Variable
+    varSizeX        : ttk.Variable
+    varSizeY        : ttk.Variable
+    varPeriodEx     : ttk.Variable
+
+    _frames         : int             # Creates the frames per second of video source
+    _period         : float           # Contains the period of frames per second value
+    _milisecond     : int
+    _modulation     : float           # Creates the modulation's frequency variable, it used for Lock-In operation
+    _status         = 'Info area is creating'
+    _size           = dict()
+    _status_event   = Event()         # Creates the event of status controller
+    _modulation_event= Event()      # Creates the modulation's frequency event controller
+    _frames_event   = Event()         # Creates the frames per second of sources video event controller
+
+    @property
+    def status(self):
+        return self._status
+
+    @status.setter
+    def status(self,value:str):
+        self._status = value
+        self._status_event.notify(self._status) # Raises the status's info changed event
+
+    @property
+    def FramesperSecond(self)->int:
+        return self._frames
     
-    def unregister(self, listener):             # Mètodo que elimina el registro de los receptores de eventos
-        self.__listener.remove(listener)
- 
-    def Modulation_Check(self, *args):
-        try:
-            vmodulation = float(self.varModulation.get())
-            self.footer.lblStatus.config(text= f'El valor introducido es: {vmodulation}')
-        except ValueError:
-            # Maneja el caso en que el valor no sea un número válido
-            vmodulation = 0.0
+    @FramesperSecond.setter
+    def FramesperSecond(self, value:int):
+        self._frames = value
+        self._frames_event.notify(self._frames) #Raises the frecuency of frames of sources video 
 
+    @property
+    def Period(self)->float:
+        return self._period
+
+    @property
+    def Size(self)->dict:
+        return self._size
+    
+    @Size.setter
+    def Size(self, args: dict):
+        self._size = args
+        self.varSizeX.set(args['X'])  
+        self.varSizeY.set(args['Y'])
+        
+    @property
+    def Modulation(self)->float:
+        return self._modulation    
+    
+    @Modulation.setter
+    def Modulation(self, value:float):
+        self._modulation = value
+        self._modulation_event.notify(self._modulation) #Raises the modulation frecuency value changed event
+    
+    def modulation_changed(self, *args):
+        try:
+            self._modulation = float(self.varModulation.get())
+            _periodex = (1 / self._modulation) if self._modulation != 0 else 0
+            self.varPeriodEx.set(round(_periodex, 4))
+        except ValueError:
+            self._modulation = 0.0
+        
+        self._modulation_event.notify(self._modulation) #Raises the modulation frecuency value changed event
+        self._status_event.notify(f'The new value of modulation is : {self._modulation}')
+
+    def frames_changed(self, *args):
+        try:
+            self.FramesperSecond = int(self.varFrames.get())
+            self._period = (1 / self.FramesperSecond) if self.FramesperSecond != 0 else 0
+            self.varPeriod.set(round(self._period, 4))
+
+        except ValueError:
+            self._frames = 9
+
+    # This Function creates the info's template
     def push_widgets(self):
+        # It creates the video's information fields inside
+        self.frmVideo = ttk.LabelFrame(master = self, 
+                                        text='Video:',
+                                        relief=ttk.SOLID,
+                                        padding=3,
+                                        bootstyle=ttk.INFO
+                                        )
+        self.frmVideo.grid(row=0,column=0,sticky=EW)
+        # self.frmVideo.pack(side=TOP,expand=YES,fill=X)
+
         # It create's the experiment information's frame 
         self.frmexperiment = ttk.LabelFrame(master = self, 
                                         text='Experiment:',
@@ -138,16 +282,125 @@ class body_Info(ttk.LabelFrame):
                                         padding=3,
                                         bootstyle=ttk.INFO
                                         )
-        self.frmexperiment.pack(side=TOP,expand=YES,fill=X)
+        self.frmexperiment.grid(row=2,column=0,sticky=EW)
+        # self.frmexperiment.pack(side=TOP,expand=YES,fill=X)
+
+        # It Creates the video source information
+        frmVideoData = ttk.Frame(master=self.frmVideo,padding=3)
+        frmVideoData.pack(side=TOP,fill=X,expand=YES)
+        frmVideoData.columnconfigure(0,weight=1)
+        lblFrames = ttk.Label(master=frmVideoData,
+                                  text='Frequency:',
+                                  font=(PRG_FONT, PRG_FONT_SIZE, PRG_FONT_PROP)
+                                  )
+        lblFrames.grid(row=0, column=0,sticky=EW)
+        self.varFrames = ttk.Variable(master = frmVideoData, name = 'varFPS', value = '30' )
+        inFrames = ttk.Entry(frmVideoData, 
+                                 textvariable=self.varFrames,
+                                 width=8,
+                                 justify=CENTER,
+                                 font=(PRG_FONT, PRG_FONT_SIZE, PRG_FONT_PROP)
+                                 )
+        inFrames.grid(row=0,column=1,sticky=EW)
+
+        lblFPS = ttk.Label(master=frmVideoData,text='FPS')
+        lblFPS.grid(row=0,column=2,sticky=EW)
+
+
+        frmVideoFrames = ttk.Frame(master=self.frmVideo,padding=3)
+        frmVideoFrames.pack(side=TOP,fill=X,expand=YES)
+        frmVideoFrames.columnconfigure(0,weight=1)
+
+        lblNumFrames = ttk.Label(master=frmVideoFrames,
+                                  text='Frames:',
+                                  font=(PRG_FONT, PRG_FONT_SIZE, PRG_FONT_PROP)
+                                  )
+        lblNumFrames.grid(row=0,column=0,sticky=EW)
+
+        self.varNumFrames = ttk.Variable(master = frmVideoFrames, name = 'varNumFrames', value = '30' )
+        inNumFrames = ttk.Entry(frmVideoFrames, 
+                                 textvariable=self.varNumFrames,
+                                 width=8,
+                                 justify=CENTER,
+                                 font=(PRG_FONT, PRG_FONT_SIZE, PRG_FONT_PROP),
+                                 state='readonly'
+                                 )
+        inNumFrames.grid(row=0,column=1,sticky=EW)
+
+
+        frmVideoPeriod = ttk.Frame(master=self.frmVideo,padding=3)
+        frmVideoPeriod.pack(side=TOP,fill=X,expand=YES)
+        frmVideoPeriod.columnconfigure(0,weight=1)
+
+        lblPeriod = ttk.Label(master=frmVideoPeriod,
+                                  text='Period:',
+                                  font=(PRG_FONT, PRG_FONT_SIZE, PRG_FONT_PROP)
+                                  )
+        lblPeriod.grid(row=0,column=0,sticky=EW)
+        self.varPeriod = ttk.Variable(master = frmVideoPeriod, name = 'varPeriod', value = '30' )
+        inPeriod = ttk.Entry(frmVideoPeriod, 
+                                 textvariable=self.varPeriod,
+                                 width=8,
+                                 justify=CENTER,
+                                 font=(PRG_FONT, PRG_FONT_SIZE, PRG_FONT_PROP),
+                                 state='readonly'
+                                 )
+        inPeriod.grid(row=0,column=1,sticky=EW)
+        lblPeriodTime = ttk.Label(master=frmVideoPeriod,
+                                  text='s',
+                                  font=(PRG_FONT, PRG_FONT_SIZE, PRG_FONT_PROP)
+                                  )
+        lblPeriodTime.grid(row=0,column=2,sticky=EW)
+
+        # It Creates the video source information
+        frmVideoSize = ttk.Frame(master=self.frmVideo,padding=3)
+        frmVideoSize.pack(side=TOP,fill=X,expand=YES)
+        frmVideoSize.columnconfigure(0,weight=1)
+
+        lblSize = ttk.Label(master=frmVideoSize,
+                                  text='Size:',
+                                  font=(PRG_FONT, PRG_FONT_SIZE, PRG_FONT_PROP)
+                                  )
+        lblSize.grid(row=0,column=0,sticky=EW)
+
+        lblSizeX = ttk.Label(master=frmVideoSize,
+                                  text='X:',
+                                  font=(PRG_FONT, PRG_FONT_SIZE, PRG_FONT_PROP)
+                                  )
+        lblSizeX.grid(row=0,column=1)
+        self.varSizeX = ttk.Variable(master = frmVideoSize, name = 'varSizeX', value = '30' )
+        inSizeX = ttk.Entry(frmVideoSize, 
+                                 textvariable=self.varSizeX,
+                                 width=4,
+                                 justify=CENTER,
+                                 font=(PRG_FONT, PRG_FONT_SIZE, PRG_FONT_PROP),
+                                 state='readonly'
+                                 )
+        inSizeX.grid(row=0,column=2)
+        lblSizeY = ttk.Label(master=frmVideoSize,
+                                  text='Y:',
+                                  font=(PRG_FONT, PRG_FONT_SIZE, PRG_FONT_PROP)
+                                  )
+        lblSizeY.grid(row=0,column=3)
+        self.varSizeY = ttk.Variable(master = frmVideoSize, name = 'varSizeY', value = '30' )
+        inSizeY = ttk.Entry(frmVideoSize, 
+                                 textvariable=self.varSizeY,
+                                 width=4,
+                                 justify=CENTER,
+                                 font=(PRG_FONT, PRG_FONT_SIZE, PRG_FONT_PROP),
+                                 state='readonly'
+                                 )
+        inSizeY.grid(row=0,column=4,sticky=EW)
+
+
 
         # It create the information's fields inside  
-        frmModulation = ttk.Frame(master=self.frmexperiment,
-                                       padding=3)
+        frmModulation = ttk.Frame(master=self.frmexperiment,padding=3)
         frmModulation.pack(side=TOP,fill=X,expand=YES)
 
         lblModulation = ttk.Label(master=frmModulation,
                                   text='Modulation:',
-                                  font=('Helvetica', 10, 'italic')
+                                  font=(PRG_FONT, PRG_FONT_SIZE, PRG_FONT_PROP)
                                   )
         lblModulation.pack(side=LEFT,padx=PADX)
 
@@ -156,57 +409,329 @@ class body_Info(ttk.LabelFrame):
                                  textvariable=self.varModulation,
                                  width=8,
                                  justify=CENTER,
-                                 font=('Helvetica', 10, 'italic')
+                                 font=(PRG_FONT, PRG_FONT_SIZE, PRG_FONT_PROP)
                                  )
         inModulation.pack(side=LEFT,padx=PADX,expand=YES,fill=X)
 
         lblHz = ttk.Label(master=frmModulation,text='Hz')
         lblHz.pack(padx=PADX)
 
-        self.footer.setvar('Status',f'The information frame created......')
+        frmVideoPeriodEx = ttk.Frame(master=self.frmexperiment,padding=3)
+        frmVideoPeriodEx.pack(side=TOP,fill=X,expand=YES)
+        frmVideoPeriodEx.columnconfigure(0,weight=1)
+
+        lblPeriodEx = ttk.Label(master=frmVideoPeriodEx,
+                                  text='Period:',
+                                  font=(PRG_FONT, PRG_FONT_SIZE, PRG_FONT_PROP)
+                                  )
+        lblPeriodEx.grid(row=0,column=0,sticky=EW)
+        self.varPeriodEx = ttk.Variable(master = frmVideoPeriodEx, name = 'varPeriodex', value = '30' )
+        inPeriodEx = ttk.Entry(frmVideoPeriodEx, 
+                                 textvariable=self.varPeriodEx,
+                                 width=8,
+                                 justify=CENTER,
+                                 font=(PRG_FONT, PRG_FONT_SIZE, PRG_FONT_PROP),
+                                 state='readonly'
+                                 )
+        inPeriodEx.grid(row=0,column=1,sticky=EW)
+        lblPeriodTimeEx = ttk.Label(master=frmVideoPeriodEx,
+                                  text='s',
+                                  font=(PRG_FONT, PRG_FONT_SIZE, PRG_FONT_PROP)
+                                  )
+        lblPeriodTimeEx.grid(row=0,column=2,sticky=EW)
+
 
     def __init__(self, **kwargs):
-        self.footer = kwargs.pop('footer',None)
         super().__init__(**kwargs)
         self.config(relief=ttk.SOLID)
         self.config(text='Information')
         self.config(padding=3)
         self.config(bootstyle=ttk.INFO)
-        self.grid(row=0,column=0,sticky=NSEW)
+        self.grid(row=2,column=1,sticky=NSEW)
         self.columnconfigure(1, weight=1)
-        self.rowconfigure(0,weight=1)
-        self.footer.setvar('Status',f'The Information frame is creating.....')
+        self.rowconfigure(1,weight=1)
         self.push_widgets()
-        self.varModulation.trace_add("write", self.Modulation_Check)
+        self.varModulation.trace_add("write", self.modulation_changed)
+        self.varFrames.trace_add('write',self.frames_changed)
 
+    def __str__(self) -> str:
+        return self._status 
+        
+    # self.info = body_Info(master = self, footer = self.footer)
+    # self.info.register(self.modulation_changed)
+            
+    # self.body_options = Body_Options(master = self)
+    # self.Process = Body_Process(master=self,relief=kwargs['relief'],bootstyle=LIGHT)
 
+class Body_Source(ttk.Labelframe):
 
-class main_body(ttk.Frame):
-    """app's Main body, all sections are configurated inside of this.
+    btnOpenFile     : ttk.Button            # Creates the Open file Button
+    frmDevice       : ttk.Labelframe        # Creates the experiment's device select 
+    varSource       : ttk.Variable          # Creates the control's variable for modulation frecuency
+    
+    _cvCapture       : cv2.VideoCapture      # Creates the opencv capture object
+    _status         = 'The devices info area is creating'
+    _status_event   = Event()         # Creates the event of status controller
+    _opened_event   = Event()
+    _opened         : bool                  # Indicate if the source video is opened
 
-    Args:
-        ttk.frame : this class is inherited of ttk.Frame
-    """
+    @property
+    def status(self):
+        return self._status
 
-    footer : main_footer            # sets the footer property, it's used to present progress and status info
-    info   : body_Info              # Sets the info's section frame 
+    @status.setter
+    def status(self,value:str):
+        self._status = value
+        self._status_event.notify(self._status) # Raises the status's info changed event
+
+    @property
+    def Video(self)->cv2.VideoCapture:
+        return self._cvCapture
+    
+    @Video.setter
+    def Video(self,value:cv2.VideoCapture):
+        self._cvCapture = value
+    
+    def isVideoOpen(self)->bool:
+        return self._opened
+
+    def open_video_file(self):
+        # Esto abrirá el cuadro de diálogo para seleccionar el archivo
+        video_file = askopenfilename(filetypes=[("Video files", "*.mp4 *.avi *.mkv")]) 
+        if video_file:
+            self.varSource.set(video_file)
+        else:
+            self.status = 'The name file can not be empty'
+
+        self._cvCapture = cv2.VideoCapture(video_file)
+
+        if self._cvCapture.isOpened():
+            self.status = 'Video File opened correctly'
+            self._opened = True
+            self._opened_event.notify(self._opened) # Raises the status's info changed event
+        else:
+            self.status = 'Video File can not be opened'
+        # while(self._cvCapture.isOpened()):
+        #     ret, frame = self._cvCapture.read()
+        #     if ret:
+        #         pass
+                
+        # #         cv2.imshow('Video', frame)
+        # #         if cv2.waitKey(1) & 0xFF == ord('q'):
+        # #             break
+        #     else:
+        #         break
+
+    def push_widgets(self):
+        # It create's the experiment information's frame 
+        self.frmDevice = ttk.Label(master = self,
+                                        relief=ttk.SOLID,
+                                        padding=3,
+                                        bootstyle=ttk.INFO
+                                        )
+        self.frmDevice.pack(side=TOP,expand=YES,fill=X)
+
+        # It create the information's fields inside  
+        frmSource = ttk.Frame(master=self.frmDevice,
+                                       padding=3)
+        frmSource.pack(side=TOP,fill=X,expand=YES)
+
+        lblSource = ttk.Label(master=frmSource,
+                                  text='Source:',
+                                  font=(PRG_FONT, PRG_FONT_SIZE, PRG_FONT_PROP)
+                                  )
+        lblSource.pack(side=LEFT,padx=PADX,anchor='center')
+
+        self.varSource = ttk.Variable(master = frmSource, name = 'varSource', value = PATH )
+        
+        inSource = ttk.Entry(frmSource, 
+                                 textvariable=self.varSource,
+                                 width=50,
+                                 justify=LEFT,
+                                 font=(PRG_FONT, PRG_FONT_SIZE, PRG_FONT_PROP)
+                                 )
+        inSource.pack(side=LEFT,padx=PADX,expand=YES,fill=X,anchor='center')
+
+        self.btnOpenFile = ttk.Button(master=frmSource,
+                                    image=self.imgOpenFile,
+                                    command=self.open_video_file
+                                    )
+        self.btnOpenFile.pack(side=RIGHT,padx=PADX,anchor='center')
 
     def __init__(self, **kwargs):
-        self.footer = kwargs.pop('footer',None)
+        super().__init__(**kwargs)
+        self.config(relief=ttk.SOLID)
+        self.config(text='Source of video information')
+        self.config(padding=3)
+        self.config(bootstyle=ttk.INFO)
+        self.grid(row=1,column=1,sticky=EW,columnspan=2)
+        self.columnconfigure(1, weight=1)
+        self.rowconfigure(0,weight=1)
+
+        self.imgOpenFile = ttk.PhotoImage(name='OpenFile', file=PATH / 'OpenFile.png')
+        
+        self.push_widgets()
+
+    def __str__(self) -> str:
+        return self._status 
+
+class Body_Process(ttk.Frame):
+    
+    _status         = 'The process area is creating'
+    _status_event   = Event()         # Creates the event of status controller
+    _notebook       : ttk.Notebook
+    _video          : cv2.VideoCapture
+    videoMeter      : guiPlayer.VideoMeter
+    videoPlayer     : guiPlayer.VideoPlayer
+    
+    @property
+    def status(self):
+        return self._status
+
+    @status.setter
+    def status(self,value:str):
+        self._status = value
+        self._status_event.notify(self._status) # Raises the status's info changed event
+
+    @property
+    def video(self)->cv2.VideoCapture:
+        return self._video
+    
+    @video.setter
+    def video(self, value:cv2.VideoCapture):
+        self._video = value
+
+    def onPositionChanged(self, value):
+        self._status_event.notify(f'The position is {value}')
+
+    def create_tabPlayer(self, player:ttk.Frame):
+        # Creation and configuration of video's player into play's source tab
+        player.columnconfigure(0,weight=1)
+        player.rowconfigure(1,weight=1)
+        self.videoMeter     = guiPlayer.VideoMeter(master = player)
+        self.videoPlayer    = guiPlayer.VideoPlayer(master = player)
+        self.videoControl   = guiPlayer.VideoControls(master = player)
+
+
+    def create_tabs(self):
+        # creation and configuration of the tab of fouriers's method
+        tabPlayer = ttk.Frame(self._notebook, padding=PADGRAL,bootstyle = SUCCESS)
+        self._notebook.add(tabPlayer, text=txtTabPlayer)
+        self.create_tabPlayer(tabPlayer)
+
+
+    def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.config(relief=ttk.SOLID)
         self.config(padding=3)
-        self.config(bootstyle=ttk.SECONDARY)
-        self.grid(row=1,column=0,sticky=NSEW)
-        self.columnconfigure(1, weight=1)
-        self.rowconfigure(0,weight=1)
+        self.config(bootstyle=ttk.INFO)
+        self.grid(row=2,column=2,sticky=NSEW)
 
-        self.info = body_Info(master = self, footer = self.footer)
-            
-        # self.body_options = Body_Options(master = self)
-        # self.Process = Body_Process(master=self,relief=kwargs['relief'],bootstyle=LIGHT)
-                  
+        # Lockin Processing, it depends of method selected
+        self._notebook = ttk.Notebook(master=self,height=600)
+        self._notebook.pack(expand=YES,fill=BOTH)
+        self.create_tabs()
+        self.videoMeter._status_event.register(self.onPositionChanged)
+        # self.columnconfigure(1, weight=1)
+        # self.rowconfigure(0,weight=1)
 
+        # self.imgOpenFile = ttk.PhotoImage(name='OpenFile', file=PATH / 'icons8_settings_64px.png')
+        # self.varSource.trace_add("write", self.source_changed)
+
+    def __str__(self) -> str:
+        return self._status 
+
+class main_frame(ttk.Frame):
+    """
+        This Class allow to create and manipuling the principal frame of the application
+        its a Frame herencied 
+    Args:
+        ttk.Frame args: 
+    """
+    _status = 'Program initializing.......'
+    _status_event   = Event()
+    _info_section   : body_Info
+    _option_section : Body_Options
+    _info_source    : Body_Source
+    _process_section: Body_Process
+
+    @property
+    def status(self):
+        return self._status
+
+    @status.setter
+    def status(self,value:str):
+        self._status = value
+        self._status_event.notify(self._status) # Raises the status's info event
+    
+    def reproducir_video(self):
+        if self._info_source.Video is not None:
+            ret, frame = self._info_source.Video.read()
+            if ret:
+                frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+                im = Image.fromarray(frame)
+                img = ImageTk.PhotoImage(image=im)
+
+                # lblVideo.configure(image=img)
+                # lblVideo.image = img
+                # lblVideo.after(10, visualizar)
+            else:
+                # lblVideo.image = ""
+                self._info_source.Video.set(cv2.CAP_PROP_POS_FRAMES,0)
+
+    def onOpened(self, value):
+        if value:
+            self._info_section.varFrames.set(self._info_source.Video.get(cv2.CAP_PROP_FPS))
+            self._process_section.video = self._info_source.Video
+            numFrames = int(self._info_source.Video.get(cv2.CAP_PROP_FRAME_COUNT))
+            self._info_section.varNumFrames.set(numFrames)
+            self._process_section.videoMeter.scale.config(to=numFrames)
+            # sets the x and y dimension of video source
+            x = int(self._info_source.Video.get(cv2.CAP_PROP_FRAME_WIDTH))
+            y = int(self._info_source.Video.get(cv2.CAP_PROP_FRAME_HEIGHT))
+            self._info_section.Size = {'X':x, 'Y': y}
+            self.reproducir_video()
+            self._process_section.videoMeter.update_remain(guiPlayer.getDuration(self._info_source.Video))
+
+    def onStatusChanged(self,status):
+        self._status_event.notify(status) # Raises the status's info event
+
+    def onModulationChanged(self,modulation):
+        print(modulation)
+
+    def onVideoFPSChanged(self, frames):
+        self.status = f'FPS of source video: {frames}'
+
+    # Constructor
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.config(relief=FRM_BORDER)
+        self.config(padding=PADGRAL)
+        self.config(bootstyle=ttk.PRIMARY)
+        self.columnconfigure(2,weight=1)
+        self.rowconfigure(2,weight=1)
+        self.pack(fill=BOTH,expand=YES)
+
+        # This section configure the info's area
+        self._info_section = body_Info(master = self)
+        self._info_section._status_event.register(self.onStatusChanged)
+        self._info_section._modulation_event.register(self.onModulationChanged)
+        self._info_section._frames_event.register(self.onVideoFPSChanged)
+
+        # This section configure the options (buttons) area
+        self._option_section = Body_Options(master = self)
+
+        # This section configure the devices of video's sources 
+        self._info_source   = Body_Source(master = self)
+        self._info_source._status_event.register(self.onStatusChanged)
+        self._info_source._opened_event.register(self.onOpened)
+
+        # This section configure the Experiment Process area
+        self._process_section= Body_Process(master=self)
+        self._process_section._status_event.register(self.onStatusChanged)
+
+    def __str__(self) -> str:
+        return self._status 
 
 
 
@@ -231,7 +756,8 @@ if __name__ == "__main__":
 
 
 
-
+# self.footer = kwargs.pop('footer',None)
+# self.footer.setvar('Status',f'the new value is: {value}')
 
 
 

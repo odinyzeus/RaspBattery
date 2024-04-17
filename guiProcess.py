@@ -4,7 +4,7 @@ from Constants import *
 from guiFooter import main_footer as mf
 
 class Experiment(ttk.LabelFrame):
-    __listener      = []                    # Se inicializa el controlador de receptores de eventos
+    
     __footer        : mf
     __modulation    = 0.0
     _var_mod = None
