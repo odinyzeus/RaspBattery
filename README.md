@@ -18,3 +18,8 @@ Geometrical:
 Four Points:
 
 Basic:
+
+To use this program in a raspberry pi you must follow next step
+1.- download and clone this repository
+2.- create and activate a python virtual environment
+3.- execute 'python App.py' 

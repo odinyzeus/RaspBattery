@@ -171,7 +171,7 @@ class VideoPlayer(ttk.Frame):
         altura_objetivo = int(img_original.height * proporcion)
         
         # Redimensionar la imagen
-        img_redimensionada = img_original.resize((ancho_objetivo, altura_objetivo), Image.ANTIALIAS)
+        img_redimensionada = img_original.resize((ancho_objetivo, altura_objetivo), Image.LANCZOS)
         
         self.imgAtras = ImageTk.PhotoImage(img_redimensionada)
 
