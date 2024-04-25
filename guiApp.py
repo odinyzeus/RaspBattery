@@ -495,6 +495,20 @@ class Body_Source(ttk.Labelframe):
     def isVideoOpen(self)->bool:
         return self._opened
 
+    def get_cameras(self):
+    # Esta función devuelve una lista de índices de cámaras disponibles en el sistema.
+        index = 0
+        arr = []
+        while True:
+            cap = cv2.VideoCapture(index)
+            if cap.isOpened():
+                arr.append(index)
+                cap.release()
+                index += 1
+            else:
+                break
+        return arr
+
     def open_video_file(self):
         # Esto abrirá el cuadro de diálogo para seleccionar el archivo
         video_file = askopenfilename(filetypes=[("Video files", "*.mp4 *.avi *.mkv")]) 
@@ -511,16 +525,22 @@ class Body_Source(ttk.Labelframe):
             self._opened_event.notify(self._opened) # Raises the status's info changed event
         else:
             self.status = 'Video File can not be opened'
-        # while(self._cvCapture.isOpened()):
-        #     ret, frame = self._cvCapture.read()
-        #     if ret:
-        #         pass
-                
-        # #         cv2.imshow('Video', frame)
-        # #         if cv2.waitKey(1) & 0xFF == ord('q'):
-        # #             break
-        #     else:
-        #         break
+
+    def open_video_camera(self):
+        camara = self.lstCameras.get()
+        self._cvCapture = cv2.VideoCapture(int(camara))
+        if self._cvCapture.isOpened():
+            self.status = 'Video Camera opened correctly'
+            self._opened = self._cvCapture.isOpened()
+            self._opened_event.notify(self._opened)
+        else:
+            self.status = 'The video camera could not open'
+
+    def stop_video_camera(self):
+        self._cvCapture.release()
+        self._opened = self._cvCapture.isOpened()
+        self._opened_event.notify(self._opened)
+        self.status  = 'The video camera has been stopped'
 
     def push_widgets(self):
         # It create's the experiment information's frame 
@@ -531,20 +551,20 @@ class Body_Source(ttk.Labelframe):
                                         )
         self.frmDevice.pack(side=TOP,expand=YES,fill=X)
 
-        # It create the information's fields inside  
-        frmSource = ttk.Frame(master=self.frmDevice,
+        # It create the information's fields of video file  
+        frmFile = ttk.Frame(master=self.frmDevice,
                                        padding=3)
-        frmSource.pack(side=TOP,fill=X,expand=YES)
+        frmFile.pack(side=TOP,fill=X,expand=YES)
 
-        lblSource = ttk.Label(master=frmSource,
+        lblSource = ttk.Label(master=frmFile,
                                   text='Source:',
                                   font=(PRG_FONT, PRG_FONT_SIZE, PRG_FONT_PROP)
                                   )
         lblSource.pack(side=LEFT,padx=PADX,anchor='center')
 
-        self.varSource = ttk.Variable(master = frmSource, name = 'varSource', value = PATH )
+        self.varSource = ttk.Variable(master = frmFile, name = 'varSource', value = PATH )
         
-        inSource = ttk.Entry(frmSource, 
+        inSource = ttk.Entry(master=frmFile, 
                                  textvariable=self.varSource,
                                  width=50,
                                  justify=LEFT,
@@ -552,11 +572,41 @@ class Body_Source(ttk.Labelframe):
                                  )
         inSource.pack(side=LEFT,padx=PADX,expand=YES,fill=X,anchor='center')
 
-        self.btnOpenFile = ttk.Button(master=frmSource,
+        self.btnOpenFile = ttk.Button(master=frmFile,
                                     image=self.imgOpenFile,
                                     command=self.open_video_file
                                     )
         self.btnOpenFile.pack(side=RIGHT,padx=PADX,anchor='center')
+
+        # It create the information's fields of cameras  
+        frmCameras = ttk.Frame(master=self.frmDevice,
+                                       padding=3)
+        frmCameras.pack(side=TOP,fill=X,expand=YES)
+
+        lblCameras = ttk.Label(master=frmCameras,
+                                  text='Cameras:',
+                                  font=(PRG_FONT, PRG_FONT_SIZE, PRG_FONT_PROP)
+                                  )
+        
+        lblCameras.pack(side=LEFT,padx=PADX,anchor=CENTER)
+        cameras_list = self.get_cameras()
+        self.lstCameras = ttk.Combobox(master=frmCameras,values=cameras_list)
+        self.lstCameras.pack(side=LEFT , padx=PADX, anchor=CENTER)
+
+        self.btnOpenCamera = ttk.Button(master=frmCameras,
+                                    image=self.imgOpenCamera,
+                                    command=self.open_video_camera
+                                    )
+        self.btnOpenCamera.pack(side=LEFT,padx=PADX,anchor='center')
+
+        self.btnStopCamera = ttk.Button(master=frmCameras,
+                                    image=self.imgStopCamera,
+                                    command=self.stop_video_camera
+                                    )
+        self.btnStopCamera.pack(side=LEFT,padx=PADX,anchor='center')
+
+        if cameras_list:
+            self.lstCameras.set(cameras_list[0])
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -569,8 +619,14 @@ class Body_Source(ttk.Labelframe):
         self.rowconfigure(0,weight=1)
 
         self.imgOpenFile = ttk.PhotoImage(name='OpenFile', file=PATH / 'OpenFile.png')
+        self.imgOpenCamera = ttk.PhotoImage(name ='OpenCamera', file= PATH / 'boton-de-play.png')
+        self.imgStopCamera = ttk.PhotoImage(name ='StopCamera', file= PATH / 'detener.png')
+        
         
         self.push_widgets()
+        # Set the event's Controller for combo box
+
+        # self.lstCameras.bind('<<ComboboxSelected>>',self.onCamera)
 
     def __str__(self) -> str:
         return self._status 
@@ -601,6 +657,18 @@ class Body_Process(ttk.Frame):
     def video(self, value:cv2.VideoCapture):
         self._video = value
 
+    def onBack(self):
+        self.status = 'Se acaba de presionar regresar...'
+
+    def onFront(self):
+        self.status = 'Se acaba de presionar avanzar.....'
+
+    def onPlay(self):
+        self.status = 'Se acaba de presionar Play.....'
+
+    def onPause(self):
+        self.status = 'Se acaba de presionar Pausar.....'
+
     def onPositionChanged(self, value):
         self._status_event.notify(f'The position is {value}')
 
@@ -612,12 +680,19 @@ class Body_Process(ttk.Frame):
         self.videoPlayer    = guiPlayer.VideoPlayer(master = player)
         self.videoControl   = guiPlayer.VideoControls(master = player)
 
+    def create_tabProcess(self, process:ttk.Frame):
+        process.columnconfigure(0,weight=1)
+        process.rowconfigure(1,weight=1)
+        
 
     def create_tabs(self):
         # creation and configuration of the tab of fouriers's method
         tabPlayer = ttk.Frame(self._notebook, padding=PADGRAL,bootstyle = SUCCESS)
+        tabProcess = ttk.Frame(self._notebook,padding=PADGRAL,bootstyle = SUCCESS)
         self._notebook.add(tabPlayer, text=txtTabPlayer)
+        self._notebook.add(tabProcess,text=txtTabProcess)
         self.create_tabPlayer(tabPlayer)
+        self.create_tabProcess(tabProcess)
 
 
     def __init__(self, **kwargs):
@@ -631,7 +706,12 @@ class Body_Process(ttk.Frame):
         self._notebook = ttk.Notebook(master=self,height=600)
         self._notebook.pack(expand=YES,fill=BOTH)
         self.create_tabs()
+
         self.videoMeter._status_event.register(self.onPositionChanged)
+        self.videoControl._btnAtras.register(self.onBack)
+        self.videoControl._btnFront.register(self.onFront)
+        self.videoControl._btnPlay.register(self.onPlay)
+        self.videoControl._btnPause.register(self.onPause)
         # self.columnconfigure(1, weight=1)
         # self.rowconfigure(0,weight=1)
 
@@ -666,32 +746,33 @@ class main_frame(ttk.Frame):
     
     def reproducir_video(self):
         if self._info_source.Video is not None:
-            ret, frame = self._info_source.Video.read()
-            if ret:
-                frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-                im = Image.fromarray(frame)
-                img = ImageTk.PhotoImage(image=im)
-
-                # lblVideo.configure(image=img)
-                # lblVideo.image = img
-                # lblVideo.after(10, visualizar)
-            else:
-                # lblVideo.image = ""
-                self._info_source.Video.set(cv2.CAP_PROP_POS_FRAMES,0)
+            if self._info_source.Video.isOpened():
+                ret, frame = self._info_source.Video.read()
+                if ret:
+                    frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+                    im = Image.fromarray(frame)
+                    img = ImageTk.PhotoImage(image=im)
+                    self._process_section.videoPlayer.media.configure(image=img)
+                    self._process_section.videoPlayer.media.image = img
+                    self._process_section.videoPlayer.media.after(30, self.reproducir_video)
+                else:
+                    self._info_source.Video.set(cv2.CAP_PROP_POS_FRAMES,0)
 
     def onOpened(self, value):
         if value:
-            self._info_section.varFrames.set(self._info_source.Video.get(cv2.CAP_PROP_FPS))
-            self._process_section.video = self._info_source.Video
             numFrames = int(self._info_source.Video.get(cv2.CAP_PROP_FRAME_COUNT))
-            self._info_section.varNumFrames.set(numFrames)
-            self._process_section.videoMeter.scale.config(to=numFrames)
-            # sets the x and y dimension of video source
-            x = int(self._info_source.Video.get(cv2.CAP_PROP_FRAME_WIDTH))
-            y = int(self._info_source.Video.get(cv2.CAP_PROP_FRAME_HEIGHT))
-            self._info_section.Size = {'X':x, 'Y': y}
-            self.reproducir_video()
-            self._process_section.videoMeter.update_remain(guiPlayer.getDuration(self._info_source.Video))
+            if numFrames == -1:
+                self.reproducir_video()
+            else:
+                self._info_section.varFrames.set(self._info_source.Video.get(cv2.CAP_PROP_FPS))
+                self._process_section.video = self._info_source.Video 
+                self._info_section.varNumFrames.set(numFrames)
+                self._process_section.videoMeter.scale.config(to=numFrames)
+                # sets the x and y dimension of video source
+                x = int(self._info_source.Video.get(cv2.CAP_PROP_FRAME_WIDTH))
+                y = int(self._info_source.Video.get(cv2.CAP_PROP_FRAME_HEIGHT))
+                self._info_section.Size = {'X':x, 'Y': y}
+                self._process_section.videoMeter.update_remain(guiPlayer.getDuration(self._info_source.Video))
 
     def onStatusChanged(self,status):
         self._status_event.notify(status) # Raises the status's info event

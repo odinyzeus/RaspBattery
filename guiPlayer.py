@@ -42,7 +42,23 @@ class VideoControls(ttk.Frame):
     btnPlay :ttk.Button
     btnPause: ttk.Button
     btnAdelante: ttk.Button
-    
+    _btnAtras   = Event()
+    _btnFront   = Event()
+    _btnPlay    = Event()
+    _btnPause   = Event()
+
+    def back(self, *args):
+        self._btnAtras.notify(*args)
+
+    def front(self, *args):
+        self._btnFront.notify(*args)
+
+    def play(self, *args):
+        self._btnPlay.notify(*args)
+
+    def pause(self, *args):
+        self._btnPause.notify(*args)
+
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.grid(row=2,column=0,sticky=NSEW)
@@ -60,28 +76,32 @@ class VideoControls(ttk.Frame):
         self.btnAtras = ttk.Button(master=self,
                                    image = self.imgAtras,
                                    compound=CENTER,
-                                   bootstyle=DEFAULT_THEME
+                                   bootstyle=DEFAULT_THEME,
+                                   command=self.back
                                    )
         self.btnAtras.grid(column=1,row=0,sticky=EW,padx=PADX,pady=3)
         
         self.btnPlay = ttk.Button(master=self,
                                    image = self.imgPlay,
                                    compound=CENTER,
-                                   bootstyle=DEFAULT_THEME
+                                   bootstyle=DEFAULT_THEME,
+                                   command=self.play
                                    )
         self.btnPlay.grid(column=2,row=0,sticky=EW,padx=PADX,pady=3)
         
         self.btnPause = ttk.Button(master=self,
                                    image = self.imgPause,
                                    compound=CENTER,
-                                   bootstyle=DEFAULT_THEME
+                                   bootstyle=DEFAULT_THEME,
+                                   command= self.pause
                                    )
         self.btnPause.grid(column=3,row=0,sticky=EW,padx=PADX,pady=3)
         
         self.btnAdelante = ttk.Button(master=self,
                                    image = self.imgAdelante,
                                    compound=CENTER,
-                                   bootstyle=DEFAULT_THEME
+                                   bootstyle=DEFAULT_THEME,
+                                   command=self.front
                                    )
         self.btnAdelante.grid(column=4,row=0,sticky=EW,padx=PADX,pady=3)
         self.columnconfigure(5,weight=1)
@@ -160,22 +180,19 @@ class VideoPlayer(ttk.Frame):
         self._status = int(value)
         self._status_event.notify(self._status) # Raises the status's info changed event
 
-    def push_widget(self):
+    def prepare_image(self)->ImageTk.PhotoImage:
         """Create frame to contain media"""
-        img_path = PATH / 'mp_background.png'
-        img_original = Image.open(img_path)
-
-        # Calcular la altura proporcional
+        _img_path = PATH / 'mp_background.png'
+        _original = Image.open(_img_path)
         ancho_objetivo = 480
-        proporcion = ancho_objetivo / img_original.width
-        altura_objetivo = int(img_original.height * proporcion)
-        
-        # Redimensionar la imagen
-        img_redimensionada = img_original.resize((ancho_objetivo, altura_objetivo), Image.LANCZOS)
-        
-        self.imgAtras = ImageTk.PhotoImage(img_redimensionada)
+        proporcion = ancho_objetivo / _original.width
+        altura_objetivo = int(_original.height * proporcion)
+        _final = _original.resize((ancho_objetivo, altura_objetivo), Image.LANCZOS)
+        return ImageTk.PhotoImage(_final)        
 
-        # self.imgAtras = ttk.PhotoImage(name='Player', file=PATH / )
+    def push_widget(self):     
+        self.imgAtras = self.prepare_image()
+
         self.media = ttk.Label(master=self, image=self.imgAtras)
         self.media.pack(padx=PADX,pady=PADY)
 
@@ -185,7 +202,4 @@ class VideoPlayer(ttk.Frame):
         self.config(padding=PADGRAL)
         self.config(bootstyle=ttk.DEFAULT_THEME)
         self.grid(row=1,column=0,sticky=NSEW)
-        self.push_widget()
-        
-        
- 
+        self.push_widget()  

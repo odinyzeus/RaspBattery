@@ -61,52 +61,53 @@ class MediaPlayer(ttk.Frame):
 
     def create_buttonbox(self):
         """Create buttonbox with media controls"""
-        container = ttk.Frame(self)
+        container = ttk.Frame(self, bootstyle=INFO)
         container.pack(fill=X, expand=YES)
         ttk.Style().configure('TButton', font="-size 14")
-
-        rev_btn = ttk.Button(
-            master=container,
-            text=Emoji.get('black left-pointing double triangle with vertical bar'),
-            padding=10,
-        )
-        rev_btn.pack(side=LEFT, fill=X, expand=YES)
 
         play_btn = ttk.Button(
             master=container,
             text=Emoji.get('black right-pointing triangle'),
-            padding=10,
+            padding=10,style=DEFAULT
         )
         play_btn.pack(side=LEFT, fill=X, expand=YES)
 
+        rev_btn = ttk.Button(
+            master=container,
+            text=Emoji.get('BLACK LEFT-POINTING TRIANGLE'),
+            padding=10,
+        )
+        rev_btn.pack(side=LEFT, fill=X, expand=YES)
+
+
         fwd_btn = ttk.Button(
             master=container,
-            text=Emoji.get('black right-pointing double triangle with vertical bar'),
+            text=Emoji.get('RADIOACTIVE SIGN'),
             padding=10,
         )
         fwd_btn.pack(side=LEFT, fill=X, expand=YES)
 
-        pause_btn = ttk.Button(
-            master=container,
-            text=Emoji.get('double vertical bar'),
-            padding=10,
-        )
-        pause_btn.pack(side=LEFT, fill=X, expand=YES)        
+        # pause_btn = ttk.Button(
+        #     master=container,
+        #     text=Emoji.get('double vertical bar'),
+        #     padding=10,
+        # )
+        # pause_btn.pack(side=LEFT, fill=X, expand=YES)        
 
-        stop_btn = ttk.Button(
-            master=container,
-            text=Emoji.get('black square for stop'),
-            padding=10,
-        )
-        stop_btn.pack(side=LEFT, fill=X, expand=YES)          
+        # stop_btn = ttk.Button(
+        #     master=container,
+        #     text=Emoji.get('black square for stop'),
+        #     padding=10,
+        # )
+        # stop_btn.pack(side=LEFT, fill=X, expand=YES)          
 
-        stop_btn = ttk.Button(
-            master=container,
-            text=Emoji.get('open file folder'),
-            bootstyle=SECONDARY,
-            padding=10
-        )
-        stop_btn.pack(side=LEFT, fill=X, expand=YES)             
+        # stop_btn = ttk.Button(
+        #     master=container,
+        #     text=Emoji.get('open file folder'),
+        #     bootstyle=SECONDARY,
+        #     padding=10
+        # )
+        # stop_btn.pack(side=LEFT, fill=X, expand=YES)             
 
 
     def on_progress(self, val: float):
