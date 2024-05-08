@@ -196,11 +196,11 @@ class body_Info(ttk.Labelframe):
     _period         : float           # Contains the period of frames per second value
     _milisecond     : int
     _modulation     : float           # Creates the modulation's frequency variable, it used for Lock-In operation
-    _status         = 'Info area is creating'
-    _size           = dict()
-    _status_event   = Event()         # Creates the event of status controller
+    _status          = 'Info area is creating'
+    _size            = dict()
+    _status_event    = Event()         # Creates the event of status controller
     _modulation_event= Event()      # Creates the modulation's frequency event controller
-    _frames_event   = Event()         # Creates the frames per second of sources video event controller
+    _frames_event    = Event()         # Creates the frames per second of sources video event controller
 
     @property
     def status(self):
@@ -259,7 +259,6 @@ class body_Info(ttk.Labelframe):
             self.FramesperSecond = int(self.varFrames.get())
             self._period = (1 / self.FramesperSecond) if self.FramesperSecond != 0 else 0
             self.varPeriod.set(round(self._period, 4))
-
         except ValueError:
             self._frames = 9
 
@@ -311,11 +310,11 @@ class body_Info(ttk.Labelframe):
         frmVideoFrames.pack(side=TOP,fill=X,expand=YES)
         frmVideoFrames.columnconfigure(0,weight=1)
 
-        lblNumFrames = ttk.Label(master=frmVideoFrames,
+        self.lblNumFrames = ttk.Label(master=frmVideoFrames,
                                   text='Frames:',
                                   font=(PRG_FONT, PRG_FONT_SIZE, PRG_FONT_PROP)
                                   )
-        lblNumFrames.grid(row=0,column=0,sticky=EW)
+        self.lblNumFrames.grid(row=0,column=0,sticky=EW)
 
         self.varNumFrames = ttk.Variable(master = frmVideoFrames, name = 'varNumFrames', value = '30' )
         inNumFrames = ttk.Entry(frmVideoFrames, 
@@ -439,7 +438,6 @@ class body_Info(ttk.Labelframe):
                                   font=(PRG_FONT, PRG_FONT_SIZE, PRG_FONT_PROP)
                                   )
         lblPeriodTimeEx.grid(row=0,column=2,sticky=EW)
-
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -684,7 +682,6 @@ class Body_Process(ttk.Frame):
         process.columnconfigure(0,weight=1)
         process.rowconfigure(1,weight=1)
         
-
     def create_tabs(self):
         # creation and configuration of the tab of fouriers's method
         tabPlayer = ttk.Frame(self._notebook, padding=PADGRAL,bootstyle = SUCCESS)
@@ -693,7 +690,6 @@ class Body_Process(ttk.Frame):
         self._notebook.add(tabProcess,text=txtTabProcess)
         self.create_tabPlayer(tabPlayer)
         self.create_tabProcess(tabProcess)
-
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -735,6 +731,8 @@ class main_frame(ttk.Frame):
     _info_source    : Body_Source
     _process_section: Body_Process
 
+    _fP             : int
+
     @property
     def status(self):
         return self._status
@@ -754,24 +752,26 @@ class main_frame(ttk.Frame):
                     img = ImageTk.PhotoImage(image=im)
                     self._process_section.videoPlayer.media.configure(image=img)
                     self._process_section.videoPlayer.media.image = img
-                    self._process_section.videoPlayer.media.after(30, self.reproducir_video)
+                    self._process_section.videoPlayer.media.after(self._fP, self.reproducir_video)
                 else:
                     self._info_source.Video.set(cv2.CAP_PROP_POS_FRAMES,0)
 
     def onOpened(self, value):
         if value:
             numFrames = int(self._info_source.Video.get(cv2.CAP_PROP_FRAME_COUNT))
+            
+            x = int(self._info_source.Video.get(cv2.CAP_PROP_FRAME_WIDTH))
+            y = int(self._info_source.Video.get(cv2.CAP_PROP_FRAME_HEIGHT))
+            self._info_section.Size = {'X':x, 'Y': y}
+
             if numFrames == -1:
+                self._info_section.varNumFrames.set(numFrames)                
                 self.reproducir_video()
             else:
                 self._info_section.varFrames.set(self._info_source.Video.get(cv2.CAP_PROP_FPS))
                 self._process_section.video = self._info_source.Video 
                 self._info_section.varNumFrames.set(numFrames)
                 self._process_section.videoMeter.scale.config(to=numFrames)
-                # sets the x and y dimension of video source
-                x = int(self._info_source.Video.get(cv2.CAP_PROP_FRAME_WIDTH))
-                y = int(self._info_source.Video.get(cv2.CAP_PROP_FRAME_HEIGHT))
-                self._info_section.Size = {'X':x, 'Y': y}
                 self._process_section.videoMeter.update_remain(guiPlayer.getDuration(self._info_source.Video))
 
     def onStatusChanged(self,status):
@@ -781,11 +781,13 @@ class main_frame(ttk.Frame):
         print(modulation)
 
     def onVideoFPSChanged(self, frames):
-        self.status = f'FPS of source video: {frames}'
+        self._fP  = round((1 / frames) * 1000)
+        self.status = f'FPS of source video: {frames} and period is: {self._fP}'
 
     # Constructor
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
+        self._fP = 30
         self.config(relief=FRM_BORDER)
         self.config(padding=PADGRAL)
         self.config(bootstyle=ttk.PRIMARY)

@@ -9,8 +9,7 @@ from guiPlayer import VideoPlayer   as vp
 from guiProcess import Experiment   as de
 
 
-class Body_Process(ttk.Frame): 
-    footer          : mf    
+class Body_Process(ttk.Frame):    
     VideoControls   : vc
     videoMeter      : vm
     videoPlayer     : vp
@@ -23,8 +22,6 @@ class Body_Process(ttk.Frame):
     
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        
-
         
     
     def create_tabs(self,**kwargs):

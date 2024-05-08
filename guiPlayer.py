@@ -112,7 +112,6 @@ class VideoMeter(ttk.Frame):
     elapsed_var: ttk.DoubleVar
     _status_event   = Event()         # Creates the event of status controller
     
-
     @property
     def status(self):
         return self._status
@@ -157,7 +156,6 @@ class VideoMeter(ttk.Frame):
         self.push_widget()
         self.scale.set(50)
     
-        
     def on_progress(self, val: float):
         """Update progress labels when the scale is updated."""
         # elapsed = self.elapsed_var.get()
@@ -192,7 +190,6 @@ class VideoPlayer(ttk.Frame):
 
     def push_widget(self):     
         self.imgAtras = self.prepare_image()
-
         self.media = ttk.Label(master=self, image=self.imgAtras)
         self.media.pack(padx=PADX,pady=PADY)
 
