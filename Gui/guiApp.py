@@ -273,6 +273,15 @@ class body_Info(ttk.Labelframe):
                                         )
         self.frmVideo.grid(row=0,column=0,sticky=EW)
         # self.frmVideo.pack(side=TOP,expand=YES,fill=X)
+        
+        # It creates the information's fields of Method's selection 
+        self.frmMethod = ttk.LabelFrame(master = self, 
+                                        text='Method:',
+                                        relief=ttk.SOLID,
+                                        padding=3,
+                                        bootstyle=ttk.INFO
+                                        )
+        self.frmMethod.grid(row=1,column=0,sticky=EW)
 
         # It create's the experiment information's frame 
         self.frmexperiment = ttk.LabelFrame(master = self, 
@@ -283,6 +292,7 @@ class body_Info(ttk.Labelframe):
                                         )
         self.frmexperiment.grid(row=2,column=0,sticky=EW)
         # self.frmexperiment.pack(side=TOP,expand=YES,fill=X)
+
 
         # It Creates the video source information
         frmVideoData = ttk.Frame(master=self.frmVideo,padding=3)
@@ -390,6 +400,17 @@ class body_Info(ttk.Labelframe):
                                  state='readonly'
                                  )
         inSizeY.grid(row=0,column=4,sticky=EW)
+
+
+        # It Creates the method of lockin selected
+        frmMethodSel = ttk.Frame(master=self.frmMethod,padding=3)
+        frmMethodSel.pack(side=TOP,fill=X,expand=YES)
+
+        lblMethodSel = ttk.Label(master=frmMethodSel,
+                                  text='Method:',
+                                  font=(PRG_FONT, PRG_FONT_SIZE, PRG_FONT_PROP)
+                                  )
+        lblMethodSel.pack(side=LEFT,padx=PADX)
 
 
 
@@ -678,18 +699,23 @@ class Body_Process(ttk.Frame):
         self.videoPlayer    = guiPlayer.VideoPlayer(master = player)
         self.videoControl   = guiPlayer.VideoControls(master = player)
 
-    def create_tabProcess(self, process:ttk.Frame):
+    def create_tabMethod(self, process:ttk.Frame):
         process.columnconfigure(0,weight=1)
         process.rowconfigure(1,weight=1)
+
+
+
+
+
         
     def create_tabs(self):
         # creation and configuration of the tab of fouriers's method
         tabPlayer = ttk.Frame(self._notebook, padding=PADGRAL,bootstyle = SUCCESS)
-        tabProcess = ttk.Frame(self._notebook,padding=PADGRAL,bootstyle = SUCCESS)
+        tabMethod = ttk.Frame(self._notebook,padding=PADGRAL,bootstyle = SUCCESS)
         self._notebook.add(tabPlayer, text=txtTabPlayer)
-        self._notebook.add(tabProcess,text=txtTabProcess)
+        self._notebook.add(tabMethod,text=txtTabProcess)
         self.create_tabPlayer(tabPlayer)
-        self.create_tabProcess(tabProcess)
+        self.create_tabMethod(tabMethod)
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
