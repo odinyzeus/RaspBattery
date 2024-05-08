@@ -1,7 +1,10 @@
 import ttkbootstrap as ttk
 from ttkbootstrap.constants import *
 from Constants import *
-from guiFooter import main_footer as mf
+
+
+
+
 
 class Experiment(ttk.LabelFrame):
     

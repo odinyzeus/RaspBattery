@@ -1,4 +1,4 @@
-import guiApp as gui
+import Gui.guiApp as gui
 
 from Constants import *
 

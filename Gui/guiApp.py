@@ -4,7 +4,7 @@ from ttkbootstrap.constants import *
 from Constants import *
 from tkinter.filedialog import askopenfilename
 from PIL import Image, ImageTk
-import guiPlayer
+import Gui.guiPlayer as guiPlayer
 
 
 class Event:
@@ -815,8 +815,6 @@ class main_frame(ttk.Frame):
 
     def __str__(self) -> str:
         return self._status 
-
-
 
 if __name__ == "__main__":
     __app = ttk.Window(PRG_NAME, PRG_THEME)         # Creates the principal window for application

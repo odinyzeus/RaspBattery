@@ -3,9 +3,9 @@ from ttkbootstrap.constants import *
 from Constants import *
 
 
-from guiPlayer import VideoControls as vc
-from guiPlayer import VideoMeter    as vm
-from guiPlayer import VideoPlayer   as vp
+from Gui.guiPlayer import VideoControls as vc
+from Gui.guiPlayer import VideoMeter    as vm
+from Gui.guiPlayer import VideoPlayer   as vp
 from guiProcess import Experiment   as de
 
 
