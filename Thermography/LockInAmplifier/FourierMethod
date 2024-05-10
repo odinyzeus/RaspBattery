@@ -1,0 +1,37 @@
+import ttkbootstrap as ttk
+from __init__ import PRGMAIN , PRGTHEME , Fourier_Frame
+
+class Fourier:
+    __container         : Fourier_Frame
+    
+    
+    
+    __currentFrame      = int                   # Represents the current frame in the range of frames to be process
+    __porcentage        = int                   # Represents the progress's porcentage of the process compute   
+    __last_image_Frame  = []                    # Represents the last image loader by openCV
+    __Image_full        = bool                  # Indicates if the thermal image has 2 images or just has a full size one
+    __Reset             = bool                  # Indicates that the process should be reset on the next video file read operation  
+    
+
+    #Defines the properties to set and recover the ttk.Frame container for Fourier Method
+    @property
+    def Container(self)->Fourier_Frame:
+        return self.__container
+    
+    @Container.setter
+    def Container(self, value: Fourier_Frame):
+        self.__container = value
+
+    # Creates the Fourier's class constructor
+    def __init__(self, **kwargs) -> None:
+        self.__container = Fourier_Frame(**kwargs)
+    
+
+
+if __name__ == "__main__":
+    __app = ttk.Window(PRGMAIN, PRGTHEME)         # Creates the principal window for application
+    fourier = Fourier(master = __app)
+    # frm = main_frame(master = __app)
+    # __app.config(menu=main_menu(master=__app))      # Defines that principal menu in principal application
+    __app.minsize(width=800, height=600)            # Sets the minimum size of GUI   
+    __app.mainloop()                                # event's loop

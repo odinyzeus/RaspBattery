@@ -191,6 +191,7 @@ class body_Info(ttk.Labelframe):
     varSizeX        : ttk.Variable
     varSizeY        : ttk.Variable
     varPeriodEx     : ttk.Variable
+    varMethodSel    : ttk.StringVar   # Crear una variable para almacenar la opción seleccionada
 
     _frames         : int             # Creates the frames per second of video source
     _period         : float           # Contains the period of frames per second value
@@ -201,6 +202,7 @@ class body_Info(ttk.Labelframe):
     _status_event    = Event()         # Creates the event of status controller
     _modulation_event= Event()      # Creates the modulation's frequency event controller
     _frames_event    = Event()         # Creates the frames per second of sources video event controller
+    _method_event    = Event()      # Creates the method of lockin event controller
 
     @property
     def status(self):
@@ -262,8 +264,13 @@ class body_Info(ttk.Labelframe):
         except ValueError:
             self._frames = 9
 
+    def method_changed(self,*args):
+        self._method_event.notify(self.varMethodSel.get())
+
     # This Function creates the info's template
     def push_widgets(self):
+        # Crear las opciones del menú
+        methodOptions = optionsMethod
         # It creates the video's information fields inside
         self.frmVideo = ttk.LabelFrame(master = self, 
                                         text='Video:',
@@ -401,18 +408,15 @@ class body_Info(ttk.Labelframe):
                                  )
         inSizeY.grid(row=0,column=4,sticky=EW)
 
+        self.varMethodSel =ttk.StringVar(master=self.frmMethod,name = 'MethodSelected',value='Fourier')
 
-        # It Creates the method of lockin selected
-        frmMethodSel = ttk.Frame(master=self.frmMethod,padding=3)
-        frmMethodSel.pack(side=TOP,fill=X,expand=YES)
-
-        lblMethodSel = ttk.Label(master=frmMethodSel,
-                                  text='Method:',
-                                  font=(PRG_FONT, PRG_FONT_SIZE, PRG_FONT_PROP)
-                                  )
-        lblMethodSel.pack(side=LEFT,padx=PADX)
-
-
+        # Create the radio buttons
+        for opcion in methodOptions:
+            radiobutton = ttk.Radiobutton(master=self.frmMethod,
+                                          text=opcion,
+                                          variable=self.varMethodSel,
+                                          value=opcion)
+            radiobutton.pack(anchor=W)
 
         # It create the information's fields inside  
         frmModulation = ttk.Frame(master=self.frmexperiment,padding=3)
@@ -470,7 +474,8 @@ class body_Info(ttk.Labelframe):
         self.columnconfigure(1, weight=1)
         self.rowconfigure(1,weight=1)
         self.push_widgets()
-        self.varModulation.trace_add("write", self.modulation_changed)
+        self.varModulation.trace_add('write', self.modulation_changed)
+        self.varMethodSel.trace_add('write',self.method_changed)
         self.varFrames.trace_add('write',self.frames_changed)
 
     def __str__(self) -> str:
@@ -653,7 +658,9 @@ class Body_Source(ttk.Labelframe):
 class Body_Process(ttk.Frame):
     
     _status         = 'The process area is creating'
-    _status_event   = Event()         # Creates the event of status controller
+    _tabs           = {}
+    _status_event   = Event()           # Creates the event of status controller
+    _tabSel_event   = Event()           # Creates the event of tabSelected
     _notebook       : ttk.Notebook
     _video          : cv2.VideoCapture
     videoMeter      : guiPlayer.VideoMeter
@@ -691,6 +698,11 @@ class Body_Process(ttk.Frame):
     def onPositionChanged(self, value):
         self._status_event.notify(f'The position is {value}')
 
+    def onTabSelected(self, event):
+        selected_tab = event.widget.select()
+        tab_text = event.widget.tab(selected_tab, "text")
+        self._tabSel_event.notify(tab_text)
+
     def create_tabPlayer(self, player:ttk.Frame):
         # Creation and configuration of video's player into play's source tab
         player.columnconfigure(0,weight=1)
@@ -699,23 +711,24 @@ class Body_Process(ttk.Frame):
         self.videoPlayer    = guiPlayer.VideoPlayer(master = player)
         self.videoControl   = guiPlayer.VideoControls(master = player)
 
-    def create_tabMethod(self, process:ttk.Frame):
+    def create_tabFourier(self, process:ttk.Frame):
         process.columnconfigure(0,weight=1)
         process.rowconfigure(1,weight=1)
 
-
-
-
-
-        
+    # this section creates all tabs integrated in the process 
     def create_tabs(self):
-        # creation and configuration of the tab of fouriers's method
-        tabPlayer = ttk.Frame(self._notebook, padding=PADGRAL,bootstyle = SUCCESS)
-        tabMethod = ttk.Frame(self._notebook,padding=PADGRAL,bootstyle = SUCCESS)
-        self._notebook.add(tabPlayer, text=txtTabPlayer)
-        self._notebook.add(tabMethod,text=txtTabProcess)
-        self.create_tabPlayer(tabPlayer)
-        self.create_tabMethod(tabMethod)
+        # creation and configuration of the tab of source's player method
+        self.tabPlayer = ttk.Frame(self._notebook, padding=PADGRAL,bootstyle = SUCCESS)
+        self._notebook.add(self.tabPlayer, text=txtTabPlayer)
+
+        # Creation and configuration of every option in optionMethod
+        for method in optionsMethod:
+            tab = ttk.Frame(self._notebook, padding=PADGRAL, bootstyle = SUCCESS)  
+            self._notebook.add(tab, text = method)
+            self._tabs[method] = tab   
+        
+        self.create_tabPlayer(self.tabPlayer)           # Creates the video source player
+        self.create_tabFourier(self._tabs['Fourier'])   # Creates the fourier's method
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -734,11 +747,8 @@ class Body_Process(ttk.Frame):
         self.videoControl._btnFront.register(self.onFront)
         self.videoControl._btnPlay.register(self.onPlay)
         self.videoControl._btnPause.register(self.onPause)
-        # self.columnconfigure(1, weight=1)
-        # self.rowconfigure(0,weight=1)
 
-        # self.imgOpenFile = ttk.PhotoImage(name='OpenFile', file=PATH / 'icons8_settings_64px.png')
-        # self.varSource.trace_add("write", self.source_changed)
+        self._notebook.bind("<<NotebookTabChanged>>", self.onTabSelected)
 
     def __str__(self) -> str:
         return self._status 
@@ -751,12 +761,12 @@ class main_frame(ttk.Frame):
         ttk.Frame args: 
     """
     _status = 'Program initializing.......'
+    _method_selected= str()
     _status_event   = Event()
     _info_section   : body_Info
     _option_section : Body_Options
     _info_source    : Body_Source
     _process_section: Body_Process
-
     _fP             : int
 
     @property
@@ -810,6 +820,15 @@ class main_frame(ttk.Frame):
         self._fP  = round((1 / frames) * 1000)
         self.status = f'FPS of source video: {frames} and period is: {self._fP}'
 
+    def onMethodChanged(self, method):
+        self.status = f'The method processing selected for LockIn Amplifier is: {method}'
+        self._method_selected = method
+
+    def onTabSelected(self,tab):
+        self.status = f'The tab selected is {tab}'
+        self._info_section.varMethodSel.set(tab)
+
+
     # Constructor
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -826,6 +845,7 @@ class main_frame(ttk.Frame):
         self._info_section._status_event.register(self.onStatusChanged)
         self._info_section._modulation_event.register(self.onModulationChanged)
         self._info_section._frames_event.register(self.onVideoFPSChanged)
+        self._info_section._method_event.register(self.onMethodChanged)
 
         # This section configure the options (buttons) area
         self._option_section = Body_Options(master = self)
@@ -838,6 +858,7 @@ class main_frame(ttk.Frame):
         # This section configure the Experiment Process area
         self._process_section= Body_Process(master=self)
         self._process_section._status_event.register(self.onStatusChanged)
+        self._process_section._tabSel_event.register(self.onTabSelected)
 
     def __str__(self) -> str:
         return self._status 

@@ -32,9 +32,9 @@ class Fourier:
 
     
     Wn          = lambda _, W,  n , K: pow( W, (n - 1) * (K - 1))
-    rangeFrame  = lambda _, f, i : f - i                                                # Number of total frames to be process
-    KFactor     = lambda _, N,fe,fs: N*( fe / fs )+1
-    FbP         = lambda _, modulation , framerate : (1/modulation) / (1/framerate)     # Frames by Lock-in Period
+    # rangeFrame  = lambda _, f, i : f - i                                                # Number of total frames to be process
+    # KFactor     = lambda _, N,fe,fs: N*( fe / fs )+1
+    # FbP         = lambda _, modulation , framerate : (1/modulation) / (1/framerate)     # Frames by Lock-in Period
     vop         = lambda _, frames, current:((current * 100) + 1) / frames              # Value  of  progress
     WFactor     = lambda _, N : cmath.exp(-1j*2*cmath.pi/N)
     cp          = lambda _, F , N : int(F / N) + 1                                      # Current lock-in period value
