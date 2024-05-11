@@ -3,13 +3,9 @@ from __init__ import PRGMAIN , PRGTHEME , Fourier_Frame
 
 class Fourier:
     __container         : Fourier_Frame
-    
-    
-    
+       
     __currentFrame      = int                   # Represents the current frame in the range of frames to be process
     __porcentage        = int                   # Represents the progress's porcentage of the process compute   
-    __last_image_Frame  = []                    # Represents the last image loader by openCV
-    __Image_full        = bool                  # Indicates if the thermal image has 2 images or just has a full size one
     __Reset             = bool                  # Indicates that the process should be reset on the next video file read operation  
     
 

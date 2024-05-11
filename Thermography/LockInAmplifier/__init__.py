@@ -22,7 +22,7 @@ class video_frame(ttk.LabelFrame):
     """
     __status            = 'Method of Fourier for Digital Image Lock-In-Amplifier processing...'
     __status_event      = Event()               # Creates the event's controller for show the status related to Fourier's Method process
-    modulation_event  = Event()
+    modulation_event    = Event()
     __grid_value        = {'row':0, 'column':0, 'sticky':EW}
     __varFrame_Rate     : ttk.IntVar            # Represents the frame Rate of the video that will be used by lock-in method    (fs)
     __varPeriod         : ttk.DoubleVar         # Represents the period related to frame Rate of the video that will be used by lock-in method
@@ -156,6 +156,15 @@ class lockin_frame(ttk.LabelFrame):
                                                 # pow( W, (n - 1) * (K - 1))
     __frame_period      = 0.1                   # Represents the period of frame rate of video source
     __frame_rate        = 24                    # Represents the frame rate of video source                                     (fs)
+    __Image_full        : bool                  # Indicates if the thermal image has 2 images or just has a full size one
+
+    @property
+    def ImgFull(self)->bool:
+        return self.__Image_full
+    
+    @ImgFull.setter
+    def ImgFull(self,value:bool):
+        self.__Image_full = value
 
     @property
     def W_value(self)->complex:
@@ -397,6 +406,7 @@ class lockin_frame(ttk.LabelFrame):
         self.config(text='Lock-In-Amplifier')
         self.grid(row=self.__grid_value['row'],column=self.__grid_value['column'],sticky=self.__grid_value['sticky'])
 
+        self.__Image_full       = False
         self.__varModulation    = ttk.DoubleVar(master = self, name = 'varModulation', value = '0.1')
         self.__varPeriodMod     = ttk.DoubleVar(master = self, name = 'varPeriodMod', value = '0.01')
         self.__varFrames        = ttk.IntVar(master=self, name='varFrames',value=1000)
@@ -413,6 +423,31 @@ class lockin_frame(ttk.LabelFrame):
         self.__varFinal_frame.trace_add('write',self.framesUpdate)
         self.__varFramesByPeriod.trace_add('write',self.kFactorUpdate)
 
+class images_frame(ttk.LabelFrame):
+    """
+        This Class creates the frame for all Lock-In's information
+    Args:
+        ttk.Frame args: 
+    """
+    __status            = 'Method of Fourier for Digital Image Lock-In-Amplifier processing...'
+    __status_event      = Event()               # Creates the event's controller for show the status related to Fourier's Method process 
+    __grid_value        = {'row':0, 'column':1, 'sticky':NSEW}
+    __last_image_Frame  = []                    # Represents the last image processed by by openCV
+    
+    def create_template(self):
+        pass
+
+
+    def __init__(self,**kargs):
+        super().__init__(**kargs)
+        self.config(relief=FRM_BORDER)
+        self.config(padding=PADGRAL)
+        self.config(bootstyle=ttk.SECONDARY)
+        self.config(text='Images of process')
+        self.grid(row=self.__grid_value['row'],column=self.__grid_value['column'],sticky=self.__grid_value['sticky'],rowspan=3)
+        
+        self.create_template()
+
 class Fourier_Frame(ttk.Frame):
     """
         This Class allow to create and manipuling the principal frame of the method of processing
@@ -424,6 +459,7 @@ class Fourier_Frame(ttk.Frame):
     __status_event      = Event()               # Creates the event's controller for show the status related to Fourier's Method process 
     __video_frame       : video_frame
     __Lockin_frame      : lockin_frame
+    __images_frame      : images_frame
     
     @property
     def status(self):
@@ -450,6 +486,15 @@ class Fourier_Frame(ttk.Frame):
     def videoTemplate(self, value:video_frame):
         self.__video_frame = value
 
+
+    @property
+    def imagesTemplate(self)-> images_frame:
+        return self.__images_frame
+    
+    @imagesTemplate.setter
+    def imagesTemplate(self, value:images_frame):
+        self.__images_frame =value
+
     def onVideoPeriodChanged(self, value):
         self.LockinTemplate.SourcePeriod = value
 
@@ -462,6 +507,8 @@ class Fourier_Frame(ttk.Frame):
 
         self.__video_frame  = video_frame(master = self)
         self.__Lockin_frame = lockin_frame(master = self)
+        self.__images_frame = images_frame(master = self)
         self.__video_frame.modulation_event.register(self.onVideoPeriodChanged)
         self.columnconfigure(1,weight=1)
+        self.rowconfigure(2,weight=1)
         
