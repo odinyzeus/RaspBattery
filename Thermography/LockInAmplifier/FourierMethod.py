@@ -1,5 +1,6 @@
 import ttkbootstrap as ttk
-from __init__ import PRGMAIN , PRGTHEME , Fourier_Frame
+from pathlib import Path
+from .__init__ import PRGMAIN , PRGTHEME , Fourier_Frame
 
 class Fourier:
     __container         : Fourier_Frame
@@ -7,7 +8,16 @@ class Fourier:
     __currentFrame      = int                   # Represents the current frame in the range of frames to be process
     __porcentage        = int                   # Represents the progress's porcentage of the process compute   
     __Reset             = bool                  # Indicates that the process should be reset on the next video file read operation  
+    __imgPath           : Path
+
+    @property
+    def imgPath(self)->Path:
+        return self.__imgPath
     
+    @imgPath.setter
+    def imgPath(self, value:Path):
+        self.__imgPath = value
+        self.__container.imgPath = value
 
     #Defines the properties to set and recover the ttk.Frame container for Fourier Method
     @property

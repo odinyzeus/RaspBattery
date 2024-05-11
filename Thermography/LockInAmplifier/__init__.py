@@ -1,8 +1,11 @@
-from utilities import Event
+from .utilities import Event
 import ttkbootstrap as ttk
 import math, cv2
 from ttkbootstrap.constants import *
+from PIL import Image, ImageTk
+from pathlib import Path
 
+PATH                = Path(__file__).parent
 PRGMAIN             = 'Fourier Method'
 PRGTHEME            = 'cosmo'
 FRM_BORDER          = SOLID
@@ -13,6 +16,15 @@ PRG_FONT            = 'Helvetica'
 PRG_FONT_SIZE       = 10
 PRG_FONT_PROP       = 'italic'
 
+def prepare_image(image: str)->ImageTk.PhotoImage:
+        """Create frame to contain media"""
+        __img_path = PATH / image
+        __original = Image.open(__img_path)
+        ancho_objetivo = 320
+        proporcion = ancho_objetivo / __original.width
+        altura_objetivo = int(__original.height * proporcion)
+        __final = __original.resize((ancho_objetivo, altura_objetivo), Image.LANCZOS)
+        return ImageTk.PhotoImage(__final)    
 
 class video_frame(ttk.LabelFrame):
     """
@@ -128,7 +140,7 @@ class video_frame(ttk.LabelFrame):
         self.config(text='Video Source')
         self.grid(row=self.__grid_value['row'],column=self.__grid_value['column'],sticky=self.__grid_value['sticky'])
 
-        self.__varFrame_Rate    = ttk.IntVar(master = self, name = 'varFrameRate', value = '24')
+        self.__varFrame_Rate    = ttk.IntVar(master = self, name = 'varFPS', value = '24')
         self.__varPeriod        = ttk.DoubleVar(master = self, name = 'varPeriod', value = '0.01')
         
         self.create_template()
@@ -432,11 +444,74 @@ class images_frame(ttk.LabelFrame):
     __status            = 'Method of Fourier for Digital Image Lock-In-Amplifier processing...'
     __status_event      = Event()               # Creates the event's controller for show the status related to Fourier's Method process 
     __grid_value        = {'row':0, 'column':1, 'sticky':NSEW}
-    __last_image_Frame  = []                    # Represents the last image processed by by openCV
-    
-    def create_template(self):
-        pass
+    __last_image_Frame  : ImageTk.PhotoImage    # Represents the last image processed by by openCV
+    __original_image    : ttk.Label
+    __processed_image   : ttk.Label
+    __phase_image       : ttk.Label
+    __amplitude_image   : ttk.Label
 
+
+    @property
+    def imgOriginal(self)->ttk.Label:
+        return self.__original_image
+    
+    @imgOriginal.setter
+    def imgOriginal(self,value:ttk.Label):
+        img = value.cget('image')
+        self.__original_image.configure(image=img)
+        self.__original_image.image = img
+
+    @property
+    def imgProcessed(self)->ttk.Label:
+        return self.__processed_image
+    
+    @imgProcessed.setter
+    def imgProcessed(self, value:ttk.Label):
+        self.__processed_image = value
+
+    @property
+    def imgPhase(self)->ttk.Label:
+        return self.__phase_image
+    
+    @imgPhase.setter
+    def imgPhase(self, value:ttk.Label):
+        self.__phase_image = value
+
+    @property
+    def imgAmplitude(self)->ttk.Label:
+        return self.__amplitude_image
+    
+    @imgAmplitude.setter
+    def imgAmplitude(self,value:ttk.Label):
+        self.__amplitude_image = value
+
+    def create_template(self):
+        
+        # It Creates the labelframe to original image capturated by opencv.read
+        frmOriginal         = ttk.LabelFrame(master=self, padding=PADGRAL,text='Original')
+        frmOriginal.grid(row=0,column=0,sticky=NSEW)
+
+        frmToProcess        = ttk.LabelFrame(master=self, padding=PADGRAL,text='Processed')
+        frmToProcess.grid(row=0,column=1,sticky=NSEW)
+
+        frmPhase            = ttk.LabelFrame(master=self, padding=PADGRAL,text='Phase Result')
+        frmPhase.grid(row=1,column=0,sticky=NSEW)
+        
+        frmAmplitude        = ttk.LabelFrame(master=self, padding=PADGRAL,text='Amplitude Result')
+        frmAmplitude.grid(row=1,column=1,sticky=NSEW)
+
+        # widget of Original Image configuration
+        self.__original_image   = ttk.Label(master=frmOriginal)
+        self.__original_image.pack(padx=PADGRAL,pady=PADGRAL, expand=YES, fill=BOTH)
+
+        self.__processed_image  = ttk.Label(master=frmToProcess)
+        self.__processed_image.pack(padx=PADGRAL,pady=PADGRAL, expand=YES, fill=BOTH)
+
+        self.__phase_image  = ttk.Label(master=frmPhase)
+        self.__phase_image.pack(padx=PADGRAL,pady=PADGRAL, expand=YES, fill=BOTH)
+
+        self.__amplitude_image  = ttk.Label(master=frmAmplitude)
+        self.__amplitude_image.pack(padx=PADGRAL,pady=PADGRAL, expand=YES, fill=BOTH)
 
     def __init__(self,**kargs):
         super().__init__(**kargs)
@@ -445,7 +520,8 @@ class images_frame(ttk.LabelFrame):
         self.config(bootstyle=ttk.SECONDARY)
         self.config(text='Images of process')
         self.grid(row=self.__grid_value['row'],column=self.__grid_value['column'],sticky=self.__grid_value['sticky'],rowspan=3)
-        
+        self.columnconfigure(1,weight=1)
+
         self.create_template()
 
 class Fourier_Frame(ttk.Frame):
@@ -485,7 +561,6 @@ class Fourier_Frame(ttk.Frame):
     @videoTemplate.setter
     def videoTemplate(self, value:video_frame):
         self.__video_frame = value
-
 
     @property
     def imagesTemplate(self)-> images_frame:

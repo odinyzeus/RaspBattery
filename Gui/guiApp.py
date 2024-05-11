@@ -5,6 +5,7 @@ from Constants import *
 from tkinter.filedialog import askopenfilename
 from PIL import Image, ImageTk
 import Gui.guiPlayer as guiPlayer
+from Thermography.LockInAmplifier.FourierMethod import Fourier
 
 
 class Event:
@@ -191,7 +192,8 @@ class body_Info(ttk.Labelframe):
     varSizeX        : ttk.Variable
     varSizeY        : ttk.Variable
     varPeriodEx     : ttk.Variable
-    varMethodSel    : ttk.StringVar   # Crear una variable para almacenar la opción seleccionada
+    varMethodSel    : ttk.StringVar    # Crear una variable para almacenar la opción seleccionada
+    varImgComplete  : ttk.BooleanVar
 
     _frames         : int             # Creates the frames per second of video source
     _period         : float           # Contains the period of frames per second value
@@ -266,6 +268,18 @@ class body_Info(ttk.Labelframe):
 
     def method_changed(self,*args):
         self._method_event.notify(self.varMethodSel.get())
+
+    def imgComplete_Changed(self,*args):
+        self.varImgComplete.set(not self.varImgComplete.get())
+
+
+
+
+
+
+
+
+
 
     # This Function creates the info's template
     def push_widgets(self):
@@ -463,6 +477,19 @@ class body_Info(ttk.Labelframe):
                                   font=(PRG_FONT, PRG_FONT_SIZE, PRG_FONT_PROP)
                                   )
         lblPeriodTimeEx.grid(row=0,column=2,sticky=EW)
+        
+        frmImgComplete = ttk.Frame(master=self.frmexperiment,padding=3)
+        frmImgComplete.pack(side=TOP,fill=X,expand=YES)
+        frmImgComplete.columnconfigure(0,weight=1)
+        
+        self.varImgComplete = ttk.BooleanVar(master = frmImgComplete, name = 'varImgComplete', value = False )
+        
+        radiobutton = ttk.Radiobutton(master=frmImgComplete,
+                                          text='Image Complete:',
+                                          variable=self.varImgComplete
+                                          )
+        radiobutton.pack(anchor=W,expand=YES)
+
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -477,6 +504,7 @@ class body_Info(ttk.Labelframe):
         self.varModulation.trace_add('write', self.modulation_changed)
         self.varMethodSel.trace_add('write',self.method_changed)
         self.varFrames.trace_add('write',self.frames_changed)
+        self.varImgComplete.trace_add('write',self.imgComplete_Changed)
 
     def __str__(self) -> str:
         return self._status 
@@ -665,6 +693,7 @@ class Body_Process(ttk.Frame):
     _video          : cv2.VideoCapture
     videoMeter      : guiPlayer.VideoMeter
     videoPlayer     : guiPlayer.VideoPlayer
+    fourierMethod   : Fourier
     
     @property
     def status(self):
@@ -712,6 +741,8 @@ class Body_Process(ttk.Frame):
         self.videoControl   = guiPlayer.VideoControls(master = player)
 
     def create_tabFourier(self, process:ttk.Frame):
+        self.fourierMethod = Fourier(master=process)
+        self.fourierMethod.Container.imagesTemplate.imgOriginal = self.videoPlayer.media
         process.columnconfigure(0,weight=1)
         process.rowconfigure(1,weight=1)
 
