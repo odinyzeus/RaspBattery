@@ -421,7 +421,7 @@ class lockin_frame(ttk.LabelFrame):
         self.__Image_full       = False
         self.__varModulation    = ttk.DoubleVar(master = self, name = 'varModulation', value = '0.1')
         self.__varPeriodMod     = ttk.DoubleVar(master = self, name = 'varPeriodMod', value = '0.01')
-        self.__varFrames        = ttk.IntVar(master=self, name='varFrames',value=1000)
+        self.__varFrames        = ttk.IntVar(master=self, name='varNumFrames',value=1000)
         self.__varInit_frame    = ttk.IntVar(master=self, name='varInitFrame',value=0)
         self.__varFinal_frame   = ttk.IntVar(master=self, name='varFinalFrame',value=1000)
         self.__varFramesByPeriod= ttk.IntVar(master=self, name='varFramesByPeriod',value=10)
